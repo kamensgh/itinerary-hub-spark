@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				travel: {
+					blue: 'hsl(var(--travel-blue))',
+					orange: 'hsl(var(--travel-orange))',
+					green: 'hsl(var(--travel-green))',
+					yellow: 'hsl(var(--travel-yellow))',
+					purple: 'hsl(var(--travel-purple))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,6 +74,11 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-sunset': 'var(--gradient-sunset)',
+				'gradient-ocean': 'var(--gradient-ocean)',
+				'gradient-sky': 'var(--gradient-sky)'
 			},
 			keyframes: {
 				'accordion-down': {
