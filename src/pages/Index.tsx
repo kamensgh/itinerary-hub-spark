@@ -23,9 +23,9 @@ const Index = () => {
                   Start Planning Your Trip
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
-                  View My Itineraries
+                  Sign In / Sign Up
                 </Button>
               </Link>
             </div>
