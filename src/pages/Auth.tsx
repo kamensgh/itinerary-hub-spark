@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Github, Mail, Plane } from "lucide-react";
+import { Mail, Plane } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -83,7 +83,7 @@ const Auth = () => {
     }
   };
 
-  const handleSocialAuth = async (provider: 'google' | 'github') => {
+  const handleSocialAuth = async (provider: 'google') => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -122,26 +122,15 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {/* Social Login Buttons */}
-          <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialAuth('google')}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Continue with Google
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialAuth('github')}
-            >
-              <Github className="h-4 w-4 mr-2" />
-              Continue with GitHub
-            </Button>
-          </div>
+          {/* Social Login Button */}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => handleSocialAuth('google')}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Continue with Google
+          </Button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
