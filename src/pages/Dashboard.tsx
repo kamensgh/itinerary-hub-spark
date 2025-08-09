@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +13,42 @@ import {
   Search,
   Filter,
   MoreHorizontal,
-  Plane
+  Plane,
+  LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-sky flex items-center justify-center">
+        <div className="text-center">
+          <Plane className="h-8 w-8 animate-pulse mx-auto mb-4 text-travel-blue" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   // Mock data
   const itineraries = [
     {
@@ -93,16 +126,22 @@ const Dashboard = () => {
               <Plane className="h-8 w-8" />
               <h1 className="text-3xl md:text-4xl font-bold">My Itineraries</h1>
             </div>
-            <Link to="/create">
-              <Button className="bg-white text-primary hover:bg-white/90">
-                <Plus className="h-4 w-4 mr-2" />
-                New Trip
+            <div className="flex items-center gap-3">
+              <Link to="/create">
+                <Button className="bg-white text-primary hover:bg-white/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Trip
+                </Button>
+              </Link>
+              <Button variant="ghost" onClick={handleSignOut} className="text-white hover:bg-white/20">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
-            </Link>
+            </div>
           </div>
 
           <p className="text-lg opacity-90">
-            Welcome back! Plan your next adventure or continue working on existing trips.
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! Plan your next adventure or continue working on existing trips.
           </p>
         </div>
       </div>
