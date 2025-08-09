@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,15 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Plane } from "lucide-react";
+import { Mail, Plane, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
@@ -25,9 +28,27 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
+  useEffect(() => {
+    // Handle OAuth callback errors
+    const handleAuthError = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const errorParam = urlParams.get('error');
+      const errorDescription = urlParams.get('error_description');
+      
+      if (errorParam) {
+        setError(errorDescription || 'Authentication failed');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    handleAuthError();
+  }, []);
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       if (isSignUp) {
@@ -59,6 +80,8 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
+      setError(error.message || "An unexpected error occurred.");
       toast({
         variant: "destructive",
         title: "Authentication error",
@@ -69,24 +92,46 @@ const Auth = () => {
     }
   };
 
-  const handleSocialAuth = async (provider: 'google') => {
+  const handleGoogleAuth = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         }
       });
       
       if (error) throw error;
     } catch (error: any) {
+      console.error('Google auth error:', error);
+      setError(error.message || "Failed to authenticate with Google.");
       toast({
         variant: "destructive",
         title: "Authentication error",
-        description: error.message || "An unexpected error occurred.",
+        description: error.message || "Failed to authenticate with Google.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-sky flex items-center justify-center">
+        <div className="text-center">
+          <Plane className="h-8 w-8 animate-pulse mx-auto mb-4 text-travel-blue" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-sky flex items-center justify-center p-4">
@@ -108,14 +153,22 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {/* Social Login Button */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Google Auth Button */}
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => handleSocialAuth('google')}
+            onClick={handleGoogleAuth}
+            disabled={isLoading}
           >
             <Mail className="h-4 w-4 mr-2" />
-            Continue with Google
+            {isLoading ? "Connecting..." : "Continue with Google"}
           </Button>
 
           <div className="relative">
@@ -140,6 +193,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             
@@ -153,6 +207,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                disabled={isLoading}
               />
             </div>
 
@@ -165,7 +220,11 @@ const Auth = () => {
             <button
               type="button"
               className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError(null);
+              }}
+              disabled={isLoading}
             >
               {isSignUp 
                 ? "Already have an account? Sign in" 
