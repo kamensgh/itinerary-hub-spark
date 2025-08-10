@@ -132,7 +132,7 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
             <Button size="sm" variant="ghost">
               <Share2 className="h-4 w-4" />
             </Button>
-            <Link to={`/itinerary/view?id=${itinerary.id}`}>
+            <Link to={`/itinerary/${itinerary.id}`}>
               <Button size="sm" className="bg-travel-blue hover:bg-travel-blue/90">
                 View
               </Button>

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MapPin, 
   Calendar, 
@@ -17,48 +19,114 @@ import {
   Settings,
   ArrowLeft,
   Camera,
-  Star
+  Star,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
+import type { Itinerary } from "@/hooks/useItineraries";
 
 const ItineraryView = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeView, setActiveView] = useState("timeline");
+  const [itinerary, setItinerary] = useState<Itinerary | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const itinerary = {
-    id: "1",
-    title: "Summer Adventure in Japan",
-    description: "A 10-day journey through Tokyo, Kyoto, and Osaka exploring culture, food, and nature",
-    startDate: "2024-06-15",
-    endDate: "2024-06-25",
-    participants: [
-      { id: "1", name: "Alex Chen", avatar: "", initials: "AC" },
-      { id: "2", name: "Sarah Johnson", avatar: "", initials: "SJ" },
-      { id: "3", name: "Mike Wilson", avatar: "", initials: "MW" }
-    ],
-    locations: [
-      {
-        id: "1",
-        name: "Tokyo",
-        date: "June 15-18",
-        activities: [
-          { id: "1", name: "Senso-ji Temple", time: "09:00", duration: "2 hours", type: "attraction" },
-          { id: "2", name: "Tsukiji Outer Market", time: "11:30", duration: "1.5 hours", type: "food" },
-          { id: "3", name: "Hotel Gracery Shinjuku", time: "15:00", duration: "Check-in", type: "accommodation" }
-        ]
-      },
-      {
-        id: "2",
-        name: "Kyoto",
-        date: "June 19-22",
-        activities: [
-          { id: "4", name: "Fushimi Inari Shrine", time: "08:00", duration: "3 hours", type: "attraction" },
-          { id: "5", name: "Bamboo Forest", time: "14:00", duration: "2 hours", type: "nature" },
-          { id: "6", name: "Traditional Ryokan", time: "18:00", duration: "Check-in", type: "accommodation" }
-        ]
+  useEffect(() => {
+    const fetchItinerary = async () => {
+      if (!id || !user) return;
+
+      try {
+        setLoading(true);
+        
+        // Fetch itinerary
+        const { data: itineraryData, error: itineraryError } = await supabase
+          .from('itineraries')
+          .select('*')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single();
+
+        if (itineraryError) {
+          if (itineraryError.code === 'PGRST116') {
+            toast({
+              title: "Itinerary not found",
+              description: "The requested itinerary doesn't exist or you don't have access to it.",
+              variant: "destructive",
+            });
+            navigate('/dashboard');
+            return;
+          }
+          throw itineraryError;
+        }
+
+        // Fetch participants
+        const { data: participants, error: participantsError } = await supabase
+          .from('itinerary_participants')
+          .select('*')
+          .eq('itinerary_id', id);
+
+        if (participantsError) {
+          console.error('Error fetching participants:', participantsError);
+        }
+
+        setItinerary({
+          ...itineraryData,
+          status: itineraryData.status as 'planning' | 'active' | 'completed',
+          participants: participants || []
+        });
+      } catch (error) {
+        console.error('Error fetching itinerary:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load itinerary",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-    ]
-  };
+    };
+
+    fetchItinerary();
+  }, [id, user, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-sky">
+        <div className="container mx-auto px-4 py-6">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-6 w-3/4" />
+            <div className="grid gap-4">
+              <Skeleton className="h-40 w-full" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!itinerary) {
+    return (
+      <div className="min-h-screen bg-gradient-sky flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Itinerary not found</h1>
+          <Link to="/dashboard">
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -105,31 +173,37 @@ const ItineraryView = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">{itinerary.title}</h1>
-              <p className="text-lg opacity-90 mb-4">{itinerary.description}</p>
+              <p className="text-lg opacity-90 mb-4">{itinerary.description || "No description provided"}</p>
               <div className="flex flex-wrap gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {itinerary.startDate} - {itinerary.endDate}
-                </div>
+                {itinerary.start_date && itinerary.end_date && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(itinerary.start_date).toLocaleDateString()} - {new Date(itinerary.end_date).toLocaleDateString()}
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  {itinerary.participants.length} participants
+                  {itinerary.participants?.length || 0} participants
                 </div>
+                <Badge variant="outline" className="text-white border-white/50">
+                  {itinerary.status}
+                </Badge>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {itinerary.participants.map((participant) => (
-                  <Avatar key={participant.id} className="border-2 border-white">
-                    <AvatarImage src={participant.avatar} />
-                    <AvatarFallback className="bg-white text-primary">
-                      {participant.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
+            {itinerary.participants && itinerary.participants.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {itinerary.participants.map((participant) => (
+                    <Avatar key={participant.id} className="border-2 border-white">
+                      <AvatarFallback className="bg-white text-primary">
+                        {participant.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -153,50 +227,43 @@ const ItineraryView = () => {
           </TabsList>
 
           <TabsContent value="timeline" className="space-y-6">
-            {itinerary.locations.map((location, locationIndex) => (
-              <Card key={location.id} className="border-2">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-travel-blue rounded-full flex items-center justify-center text-white font-bold">
-                      {locationIndex + 1}
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">{location.name}</CardTitle>
-                      <CardDescription className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {location.date}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {location.activities.map((activity, activityIndex) => (
-                    <div key={activity.id} className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
-                      <div className={`w-8 h-8 ${getActivityColor(activity.type)} rounded-full flex items-center justify-center text-white`}>
-                        {getActivityIcon(activity.type)}
+            {itinerary.locations && itinerary.locations.length > 0 ? (
+              itinerary.locations.map((location, locationIndex) => (
+                <Card key={locationIndex} className="border-2">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                        {locationIndex + 1}
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{activity.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {activity.duration}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline">{activity.time}</Badge>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <MessageCircle className="h-4 w-4" />
-                        </Button>
+                      <div>
+                        <CardTitle className="text-xl">{location}</CardTitle>
+                        <CardDescription className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          Destination
+                        </CardDescription>
                       </div>
                     </div>
-                  ))}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 bg-muted/30 rounded-lg">
+                      <div className="text-center text-muted-foreground">
+                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Detailed activities coming soon</p>
+                        <p className="text-sm mt-1">Add activities and timeline details to this location</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No locations added yet</h3>
+                  <p className="text-muted-foreground">Start planning by adding destinations to your itinerary</p>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </TabsContent>
 
           <TabsContent value="map" className="space-y-6">
@@ -221,29 +288,27 @@ const ItineraryView = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-4">
-                  <div className="flex gap-3">
-                    <Avatar>
-                      <AvatarFallback>SJ</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-muted p-3 rounded-lg">
-                        <p className="text-sm">Love the Tokyo itinerary! Should we add more time at the temple?</p>
+                  {itinerary.participants && itinerary.participants.length > 0 ? (
+                    <>
+                      <div className="flex gap-3">
+                        <Avatar>
+                          <AvatarFallback>{itinerary.participants[0].initials}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-muted p-3 rounded-lg">
+                            <p className="text-sm">Looking forward to this trip! 🎉</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{itinerary.participants[0].name} • Just now</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">Sarah • 2 hours ago</p>
+                    </>
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No participants yet</p>
+                      <p className="text-sm mt-1">Invite travel companions to start collaborating</p>
                     </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Avatar>
-                      <AvatarFallback>MW</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-muted p-3 rounded-lg">
-                        <p className="text-sm">Agreed! Also found a great ramen place near the temple 🍜</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">Mike • 1 hour ago</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-2">
