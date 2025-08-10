@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      itineraries: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          image: string | null
+          locations: string[] | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image?: string | null
+          locations?: string[] | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image?: string | null
+          locations?: string[] | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      itinerary_participants: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          initials: string
+          itinerary_id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          initials: string
+          itinerary_id: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          initials?: string
+          itinerary_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itinerary_participants_itinerary_id_fkey"
+            columns: ["itinerary_id"]
+            isOneToOne: false
+            referencedRelation: "itineraries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
