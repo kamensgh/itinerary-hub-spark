@@ -53,11 +53,11 @@ const getActivityColor = (type: string) => {
     case "food": return "bg-travel-orange";
     case "accommodation": return "bg-travel-green";
     case "transportation": return "bg-travel-purple";
-    case "shopping": return "bg-pink-500";
-    case "entertainment": return "bg-red-500";
-    case "nature": return "bg-green-600";
-    case "culture": return "bg-indigo-500";
-    case "sports": return "bg-yellow-500";
+    case "shopping": return "bg-travel-purple";
+    case "entertainment": return "bg-travel-orange";
+    case "nature": return "bg-travel-green";
+    case "culture": return "bg-travel-blue";
+    case "sports": return "bg-travel-yellow";
     default: return "bg-muted";
   }
 };
