@@ -7,13 +7,81 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_type: string
+          address: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          end_time: string | null
+          id: string
+          image_url: string | null
+          itinerary_id: string
+          location_index: number
+          name: string
+          notes: string | null
+          phone: string | null
+          price_range: string | null
+          start_time: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          activity_type?: string
+          address?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          image_url?: string | null
+          itinerary_id: string
+          location_index: number
+          name: string
+          notes?: string | null
+          phone?: string | null
+          price_range?: string | null
+          start_time?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          activity_type?: string
+          address?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          image_url?: string | null
+          itinerary_id?: string
+          location_index?: number
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          price_range?: string | null
+          start_time?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_itinerary_id_fkey"
+            columns: ["itinerary_id"]
+            isOneToOne: false
+            referencedRelation: "itineraries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       itineraries: {
         Row: {
           created_at: string

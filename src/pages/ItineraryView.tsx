@@ -20,13 +20,18 @@ import {
   ArrowLeft,
   Camera,
   Star,
-  Loader2
+  Loader2,
+  Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { useActivities } from "@/hooks/useActivities";
+import { ActivityForm } from "@/components/ActivityForm";
+import { ActivityCard } from "@/components/ActivityCard";
 import type { Itinerary } from "@/hooks/useItineraries";
+import type { Activity, CreateActivityData } from "@/hooks/useActivities";
 
 const ItineraryView = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +40,18 @@ const ItineraryView = () => {
   const [activeView, setActiveView] = useState("timeline");
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [selectedLocationIndex, setSelectedLocationIndex] = useState<number>(0);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+
+  const {
+    activities,
+    createActivity,
+    updateActivity,
+    deleteActivity,
+    uploadActivityImage,
+    getActivitiesForLocation,
+  } = useActivities(id || '');
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -137,14 +154,30 @@ const ItineraryView = () => {
     }
   };
 
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case "attraction": return "bg-travel-blue";
-      case "food": return "bg-travel-orange";
-      case "accommodation": return "bg-travel-green";
-      case "nature": return "bg-travel-purple";
-      default: return "bg-muted";
+  const handleAddActivity = (locationIndex: number) => {
+    setSelectedLocationIndex(locationIndex);
+    setEditingActivity(null);
+    setShowActivityForm(true);
+  };
+
+  const handleEditActivity = (activity: Activity) => {
+    setEditingActivity(activity);
+    setSelectedLocationIndex(activity.location_index);
+    setShowActivityForm(true);
+  };
+
+  const handleActivitySubmit = async (data: CreateActivityData) => {
+    if (editingActivity) {
+      await updateActivity(editingActivity.id, data);
+    } else {
+      await createActivity(selectedLocationIndex, data);
     }
+    setShowActivityForm(false);
+    setEditingActivity(null);
+  };
+
+  const handleActivityDelete = async (activityId: string) => {
+    await deleteActivity(activityId);
   };
 
   return (
@@ -228,33 +261,61 @@ const ItineraryView = () => {
 
           <TabsContent value="timeline" className="space-y-6">
             {itinerary.locations && itinerary.locations.length > 0 ? (
-              itinerary.locations.map((location, locationIndex) => (
-                <Card key={locationIndex} className="border-2">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                        {locationIndex + 1}
+              itinerary.locations.map((location, locationIndex) => {
+                const locationActivities = getActivitiesForLocation(locationIndex);
+                
+                return (
+                  <Card key={locationIndex} className="border-2">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                            {locationIndex + 1}
+                          </div>
+                          <div>
+                            <CardTitle className="text-xl">{location}</CardTitle>
+                            <CardDescription className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              Destination • {locationActivities.length} activities
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => handleAddActivity(locationIndex)}
+                          size="sm"
+                          className="shrink-0"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Activity
+                        </Button>
                       </div>
-                      <div>
-                        <CardTitle className="text-xl">{location}</CardTitle>
-                        <CardDescription className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          Destination
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 bg-muted/30 rounded-lg">
-                      <div className="text-center text-muted-foreground">
-                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Detailed activities coming soon</p>
-                        <p className="text-sm mt-1">Add activities and timeline details to this location</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardHeader>
+                    
+                    <CardContent>
+                      {locationActivities.length > 0 ? (
+                        <div className="space-y-4">
+                          {locationActivities.map((activity) => (
+                            <ActivityCard
+                              key={activity.id}
+                              activity={activity}
+                              onEdit={handleEditActivity}
+                              onDelete={handleActivityDelete}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-6 bg-muted/30 rounded-lg text-center">
+                          <Clock className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
+                          <p className="text-muted-foreground mb-2">No activities added yet</p>
+                          <p className="text-sm text-muted-foreground">
+                            Click "Add Activity" to start planning activities for this destination
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">
@@ -323,6 +384,18 @@ const ItineraryView = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <ActivityForm
+          isOpen={showActivityForm}
+          onClose={() => {
+            setShowActivityForm(false);
+            setEditingActivity(null);
+          }}
+          onSubmit={handleActivitySubmit}
+          onImageUpload={uploadActivityImage}
+          activity={editingActivity || undefined}
+          isEditing={!!editingActivity}
+        />
       </div>
     </div>
   );
