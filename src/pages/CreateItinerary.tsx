@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,46 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, MapPin, Plus, Search, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useItineraries } from "@/hooks/useItineraries";
+import { toast } from "sonner";
 
 const CreateItinerary = () => {
+  const location = useLocation();
+  const incomingData = location.state;
+  
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [locations, setLocations] = useState<Array<{ id: string; name: string; address: string }>>([]);
+  const [meetingPoint, setMeetingPoint] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  
+  const { createItinerary } = useItineraries();
+  const navigate = useNavigate();
+
+  // Populate form with incoming data if available
+  useEffect(() => {
+    if (incomingData) {
+      setTitle(incomingData.title || "");
+      setDescription(incomingData.description || "");
+      if (incomingData.startDate) {
+        setStartDate(new Date(incomingData.startDate));
+      }
+      if (incomingData.endDate) {
+        setEndDate(new Date(incomingData.endDate));
+      }
+      if (incomingData.locations) {
+        setLocations(incomingData.locations.map((loc: any, index: number) => ({
+          id: `${index}-${Date.now()}`,
+          name: loc.name || "",
+          address: loc.address || ""
+        })));
+      }
+      setMeetingPoint(incomingData.meetingPoint || "");
+    }
+  }, [incomingData]);
 
   const addLocation = () => {
     const newLocation = {
@@ -23,6 +57,84 @@ const CreateItinerary = () => {
       address: ""
     };
     setLocations([...locations, newLocation]);
+  };
+
+  const updateLocation = (id: string, field: 'name' | 'address', value: string) => {
+    setLocations(locations.map(loc => 
+      loc.id === id ? { ...loc, [field]: value } : loc
+    ));
+  };
+
+  const removeLocation = (id: string) => {
+    setLocations(locations.filter(loc => loc.id !== id));
+  };
+
+  const handlePreview = () => {
+    const previewData = {
+      title,
+      description, 
+      startDate,
+      endDate,
+      locations: locations.filter(loc => loc.name.trim() !== ""),
+      meetingPoint
+    };
+    navigate("/itinerary/preview", { state: previewData });
+  };
+
+  const handleSaveDraft = async () => {
+    if (!title.trim()) {
+      toast.error("Please enter a trip title");
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const itineraryData = {
+        title: title.trim(),
+        description: description.trim(),
+        start_date: startDate?.toISOString().split('T')[0],
+        end_date: endDate?.toISOString().split('T')[0],
+        locations: locations.filter(loc => loc.name.trim() !== "").map(loc => `${loc.name}${loc.address ? ` - ${loc.address}` : ""}`),
+        status: "planning" as const
+      };
+
+      const newItinerary = await createItinerary(itineraryData);
+      toast.success("Draft saved successfully!");
+      navigate(`/itinerary/${newItinerary.id}`);
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      toast.error("Failed to save draft. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateItinerary = async () => {
+    if (!title.trim()) {
+      toast.error("Please enter a trip title");
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const itineraryData = {
+        title: title.trim(),
+        description: description.trim(),
+        start_date: startDate?.toISOString().split('T')[0],
+        end_date: endDate?.toISOString().split('T')[0],
+        locations: locations.filter(loc => loc.name.trim() !== "").map(loc => `${loc.name}${loc.address ? ` - ${loc.address}` : ""}`),
+        status: "planning" as const
+      };
+
+      const newItinerary = await createItinerary(itineraryData);
+      toast.success("Itinerary created successfully!");
+      navigate(`/itinerary/${newItinerary.id}`);
+    } catch (error) {
+      console.error("Error creating itinerary:", error);
+      toast.error("Failed to create itinerary. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -56,6 +168,8 @@ const CreateItinerary = () => {
                 <Label htmlFor="title">Trip Title</Label>
                 <Input 
                   id="title" 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Summer Vacation in Europe" 
                   className="text-lg"
                 />
@@ -64,7 +178,9 @@ const CreateItinerary = () => {
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea 
-                  id="description" 
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Tell us about your trip plans..."
                   className="min-h-[100px]"
                 />
@@ -134,17 +250,19 @@ const CreateItinerary = () => {
               <CardDescription>Where will your group meet to start the trip?</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input 
-                    placeholder="Search for pickup location..."
-                    className="text-lg"
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input 
+                      value={meetingPoint}
+                      onChange={(e) => setMeetingPoint(e.target.value)}
+                      placeholder="Search for pickup location..."
+                      className="text-lg"
+                    />
+                  </div>
+                  <Button variant="outline">
+                    <Search className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button variant="outline">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
@@ -179,11 +297,15 @@ const CreateItinerary = () => {
                         </div>
                         <div className="flex-1 space-y-3">
                           <Input 
+                            value={location.name}
+                            onChange={(e) => updateLocation(location.id, 'name', e.target.value)}
                             placeholder="Location name"
                             className="font-medium"
                           />
                           <div className="flex gap-2">
                             <Input 
+                              value={location.address}
+                              onChange={(e) => updateLocation(location.id, 'address', e.target.value)}
                               placeholder="Search address or place..."
                               className="flex-1"
                             />
@@ -192,6 +314,14 @@ const CreateItinerary = () => {
                             </Button>
                           </div>
                         </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeLocation(location.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          Remove
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -206,12 +336,27 @@ const CreateItinerary = () => {
               <Button variant="outline">Cancel</Button>
             </Link>
             <div className="flex gap-2">
-              <Button variant="outline">Save Draft</Button>
-              <Link to="/itinerary/preview">
-                <Button className="bg-travel-blue hover:bg-travel-blue/90">
-                  Preview Itinerary
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                onClick={handleSaveDraft}
+                disabled={isCreating}
+              >
+                Save Draft
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={handlePreview}
+                disabled={!title.trim()}
+              >
+                Preview
+              </Button>
+              <Button 
+                className="bg-travel-blue hover:bg-travel-blue/90"
+                onClick={handleCreateItinerary}
+                disabled={isCreating || !title.trim()}
+              >
+                {isCreating ? "Creating..." : "Create Itinerary"}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,12 +1,19 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
+import { useItineraries } from "@/hooks/useItineraries";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const ItineraryPreview = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { createItinerary } = useItineraries();
+  const [isCreating, setIsCreating] = useState(false);
+  
   const itineraryData = location.state || {};
 
   // Mock data for preview if no state is passed
@@ -19,6 +26,36 @@ const ItineraryPreview = () => {
       { id: "1", name: "Central Park", address: "New York, NY" },
       { id: "2", name: "Times Square", address: "New York, NY" }
     ]
+  };
+
+  const handleCreateItinerary = async () => {
+    if (!data.title?.trim()) {
+      toast.error("Please enter a trip title");
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const createData = {
+        title: data.title.trim(),
+        description: data.description?.trim() || "",
+        start_date: data.startDate ? new Date(data.startDate).toISOString().split('T')[0] : undefined,
+        end_date: data.endDate ? new Date(data.endDate).toISOString().split('T')[0] : undefined,
+        locations: data.locations?.filter((loc: any) => loc.name?.trim()).map((loc: any) => 
+          `${loc.name}${loc.address ? ` - ${loc.address}` : ""}`
+        ) || [],
+        status: "planning" as const
+      };
+
+      const newItinerary = await createItinerary(createData);
+      toast.success("Itinerary created successfully!");
+      navigate(`/itinerary/${newItinerary.id}`);
+    } catch (error) {
+      console.error("Error creating itinerary:", error);
+      toast.error("Failed to create itinerary. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const data = Object.keys(itineraryData).length > 0 ? itineraryData : mockData;
@@ -136,9 +173,15 @@ const ItineraryPreview = () => {
               <Button variant="outline">Edit Itinerary</Button>
             </Link>
             <div className="flex gap-2">
-              <Button variant="outline">Save Draft</Button>
-              <Button className="bg-travel-blue hover:bg-travel-blue/90">
-                Create Itinerary
+              <Link to="/create" state={data}>
+                <Button variant="outline">Continue Editing</Button>
+              </Link>
+              <Button 
+                className="bg-travel-blue hover:bg-travel-blue/90"
+                onClick={handleCreateItinerary}
+                disabled={isCreating || !data.title?.trim()}
+              >
+                {isCreating ? "Creating..." : "Create Itinerary"}
               </Button>
             </div>
           </div>
