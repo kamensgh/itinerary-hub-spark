@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import CreateItinerary from "./pages/CreateItinerary";
+import ItineraryPreview from "./pages/ItineraryPreview";
 import ItineraryView from "./pages/ItineraryView";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -26,7 +27,7 @@ const App = () => (
             <Route path="/create" element={<CreateItinerary />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/itinerary/:id" element={<ItineraryView />} />
-            <Route path="/itinerary/preview" element={<CreateItinerary />} />
+            <Route path="/itinerary/preview" element={<ItineraryPreview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
