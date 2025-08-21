@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,15 +40,41 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      status: initialData?.status || 'planning',
-      start_date: initialData?.start_date || '',
-      end_date: initialData?.end_date || '',
-      locations: initialData?.locations?.join(', ') || '',
-      image: initialData?.image || 'gradient-sky',
+      title: '',
+      description: '',
+      status: 'planning',
+      start_date: '',
+      end_date: '',
+      locations: '',
+      image: 'gradient-sky',
     },
   });
+
+  // Reset form with initial data when modal opens or initialData changes
+  useEffect(() => {
+    if (isOpen && initialData) {
+      form.reset({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        status: initialData.status || 'planning',
+        start_date: initialData.start_date || '',
+        end_date: initialData.end_date || '',
+        locations: initialData.locations?.join(', ') || '',
+        image: initialData.image || 'gradient-sky',
+      });
+    } else if (isOpen && !initialData) {
+      // Reset to empty form for new itinerary
+      form.reset({
+        title: '',
+        description: '',
+        status: 'planning',
+        start_date: '',
+        end_date: '',
+        locations: '',
+        image: 'gradient-sky',
+      });
+    }
+  }, [isOpen, initialData, form]);
 
   const handleSubmit = async (data: FormData) => {
     try {
