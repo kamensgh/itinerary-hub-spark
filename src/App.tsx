@@ -5,9 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
-import CreateItinerary from "./pages/CreateItinerary";
+import CreateItineraryView from "./pages/ItineraryView";
 import ItineraryPreview from "./pages/ItineraryPreview";
-import ItineraryView from "./pages/ItineraryView";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -24,9 +23,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/create" element={<CreateItinerary />} />
+            <Route path="/create" element={<CreateItineraryView />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/itinerary/:id" element={<ItineraryView />} />
+            <Route path="/itinerary/new" element={<CreateItineraryView />} />
+            <Route path="/itinerary/:id" element={<CreateItineraryView />} />
             <Route path="/itinerary/preview" element={<ItineraryPreview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   MapPin, 
   Calendar, 
@@ -21,28 +24,56 @@ import {
   Camera,
   Star,
   Loader2,
-  Plus
+  Plus,
+  Edit3,
+  Save,
+  Eye,
+  Trash2,
+  X
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
+import { useItineraries, CreateItineraryData } from "@/hooks/useItineraries";
 import { ActivityForm } from "@/components/ActivityForm";
 import { ActivityCard } from "@/components/ActivityCard";
 import type { Itinerary } from "@/hooks/useItineraries";
 import type { Activity, CreateActivityData } from "@/hooks/useActivities";
 
-const ItineraryView = () => {
+interface LocationData {
+  id: string;
+  name: string;
+  address: string;
+}
+
+const CreateItineraryView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState("timeline");
-  const [itinerary, setItinerary] = useState<Itinerary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { createItinerary, updateItinerary } = useItineraries();
+  
+  // Form states
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [locations, setLocations] = useState<LocationData[]>([]);
+  const [meetingPoint, setMeetingPoint] = useState("");
+  const [status, setStatus] = useState<'planning' | 'active' | 'completed'>('planning');
+  const [image, setImage] = useState('gradient-sky');
+  
+  // View states
+  const [activeView, setActiveView] = useState("form");
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [selectedLocationIndex, setSelectedLocationIndex] = useState<number>(0);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [existingItinerary, setExistingItinerary] = useState<Itinerary | null>(null);
 
   const {
     activities,
@@ -51,65 +82,110 @@ const ItineraryView = () => {
     deleteActivity,
     uploadActivityImage,
     getActivitiesForLocation,
-  } = useActivities(id || '');
+  } = useActivities(existingItinerary?.id || '');
 
+  // Initialize form data
   useEffect(() => {
-    const fetchItinerary = async () => {
-      if (!id || !user) return;
-
-      try {
-        setLoading(true);
-        
-        // Fetch itinerary
-        const { data: itineraryData, error: itineraryError } = await supabase
-          .from('itineraries')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', user.id)
-          .single();
-
-        if (itineraryError) {
-          if (itineraryError.code === 'PGRST116') {
-            toast({
-              title: "Itinerary not found",
-              description: "The requested itinerary doesn't exist or you don't have access to it.",
-              variant: "destructive",
-            });
-            navigate('/dashboard');
-            return;
-          }
-          throw itineraryError;
-        }
-
-        // Fetch participants
-        const { data: participants, error: participantsError } = await supabase
-          .from('itinerary_participants')
-          .select('*')
-          .eq('itinerary_id', id);
-
-        if (participantsError) {
-          console.error('Error fetching participants:', participantsError);
-        }
-
-        setItinerary({
-          ...itineraryData,
-          status: itineraryData.status as 'planning' | 'active' | 'completed',
-          participants: participants || []
-        });
-      } catch (error) {
-        console.error('Error fetching itinerary:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load itinerary",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+    const incomingData = location.state?.itinerary;
+    if (incomingData) {
+      setTitle(incomingData.title || "");
+      setDescription(incomingData.description || "");
+      setStartDate(incomingData.startDate || "");
+      setEndDate(incomingData.endDate || "");
+      setMeetingPoint(incomingData.meetingPoint || "");
+      
+      if (incomingData.locations && incomingData.locations.length > 0) {
+        setLocations(incomingData.locations.map((loc: any, index: number) => ({
+          id: `location-${index}`,
+          name: typeof loc === 'string' ? loc : loc.name || '',
+          address: typeof loc === 'string' ? '' : loc.address || ''
+        })));
       }
-    };
+    }
+    
+    if (id && id !== 'new' && user) {
+      fetchExistingItinerary();
+    }
+  }, [location.state, id, user]);
 
-    fetchItinerary();
-  }, [id, user, navigate]);
+  const fetchExistingItinerary = async () => {
+    if (!id || id === 'new' || !user) return;
+
+    try {
+      setLoading(true);
+      
+      const { data: itineraryData, error: itineraryError } = await supabase
+        .from('itineraries')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (itineraryError) {
+        if (itineraryError.code === 'PGRST116') {
+          // Not found, treat as new itinerary
+          setIsEditing(false);
+          return;
+        }
+        throw itineraryError;
+      }
+
+      const { data: participants, error: participantsError } = await supabase
+        .from('itinerary_participants')
+        .select('*')
+        .eq('itinerary_id', id);
+
+      if (participantsError) {
+        console.error('Error fetching participants:', participantsError);
+      }
+
+      const itinerary = {
+        ...itineraryData,
+        status: itineraryData.status as 'planning' | 'active' | 'completed',
+        participants: participants || []
+      };
+
+      setExistingItinerary(itinerary);
+      setTitle(itinerary.title);
+      setDescription(itinerary.description || "");
+      setStartDate(itinerary.start_date || "");
+      setEndDate(itinerary.end_date || "");
+      setStatus(itinerary.status);
+      setImage(itinerary.image || 'gradient-sky');
+      setLocations(itinerary.locations?.map((loc: string, index: number) => ({
+        id: `location-${index}`,
+        name: loc,
+        address: ''
+      })) || []);
+      setIsEditing(true);
+      setActiveView("timeline");
+    } catch (error) {
+      console.error('Error fetching itinerary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load itinerary",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Location management functions
+  const addLocation = () => {
+    const newId = `location-${Date.now()}`;
+    setLocations([...locations, { id: newId, name: "", address: "" }]);
+  };
+
+  const updateLocation = (id: string, field: 'name' | 'address', value: string) => {
+    setLocations(locations.map(loc => 
+      loc.id === id ? { ...loc, [field]: value } : loc
+    ));
+  };
+
+  const removeLocation = (id: string) => {
+    setLocations(locations.filter(loc => loc.id !== id));
+  };
 
   if (loading) {
     return (
@@ -129,21 +205,113 @@ const ItineraryView = () => {
     );
   }
 
-  if (!itinerary) {
-    return (
-      <div className="min-h-screen bg-gradient-sky flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Itinerary not found</h1>
-          <Link to="/dashboard">
-            <Button>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Preview and save functions
+  const handlePreview = () => {
+    if (!title) {
+      toast({
+        title: "Missing Information",
+        description: "Please add a title for your itinerary",
+        variant: "destructive",
+      });
+      return;
+    }
+    setActiveView("preview");
+  };
+
+  const handleSaveDraft = async () => {
+    if (!title) {
+      toast({
+        title: "Missing Information", 
+        description: "Please add a title to save your itinerary",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const itineraryData: CreateItineraryData = {
+        title,
+        description,
+        status: 'planning',
+        image,
+        locations: locations.map(loc => loc.name).filter(Boolean),
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      };
+
+      if (existingItinerary) {
+        await updateItinerary(existingItinerary.id, itineraryData);
+        toast({
+          title: "Draft Saved",
+          description: "Your itinerary draft has been updated successfully",
+        });
+      } else {
+        const newItinerary = await createItinerary(itineraryData);
+        if (newItinerary) {
+          setExistingItinerary({
+            ...newItinerary,
+            status: newItinerary.status as 'planning' | 'active' | 'completed',
+            participants: []
+          });
+          setIsEditing(true);
+          navigate(`/itinerary/${newItinerary.id}`, { replace: true });
+        }
+        toast({
+          title: "Draft Saved",
+          description: "Your itinerary draft has been saved successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateItinerary = async () => {
+    if (!title) {
+      toast({
+        title: "Missing Information",
+        description: "Please add a title for your itinerary",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const itineraryData: CreateItineraryData = {
+        title,
+        description,
+        status: 'active',
+        image,
+        locations: locations.map(loc => loc.name).filter(Boolean),
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      };
+
+      let finalItinerary;
+      if (existingItinerary) {
+        await updateItinerary(existingItinerary.id, { ...itineraryData, status: 'active' });
+        finalItinerary = { ...existingItinerary, ...itineraryData, status: 'active' as const };
+      } else {
+        finalItinerary = await createItinerary(itineraryData);
+      }
+
+      if (finalItinerary) {
+        toast({
+          title: "Success!",
+          description: "Your itinerary has been created successfully",
+        });
+        navigate(`/itinerary/${finalItinerary.id}`);
+      }
+    } catch (error) {
+      console.error('Error creating itinerary:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -193,50 +361,50 @@ const ItineraryView = () => {
               </Button>
             </Link>
             <div className="flex gap-2">
+              {activeView !== 'form' && (
+                <Button 
+                  onClick={() => setActiveView('form')} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white hover:bg-white/20"
+                >
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              )}
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
-              </Button>
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-                <Settings className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{itinerary.title}</h1>
-              <p className="text-lg opacity-90 mb-4">{itinerary.description || "No description provided"}</p>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                {title || (isEditing ? existingItinerary?.title : "Create New Trip")}
+              </h1>
+              <p className="text-lg opacity-90 mb-4">
+                {description || (isEditing ? existingItinerary?.description : "Plan your next adventure")}
+              </p>
               <div className="flex flex-wrap gap-4 text-sm">
-                {itinerary.start_date && itinerary.end_date && (
+                {(startDate && endDate) && (
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(itinerary.start_date).toLocaleDateString()} - {new Date(itinerary.end_date).toLocaleDateString()}
+                    {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
                   </div>
                 )}
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  {itinerary.participants?.length || 0} participants
+                  {existingItinerary?.participants?.length || 0} participants
                 </div>
                 <Badge variant="outline" className="text-white border-white/50">
-                  {itinerary.status}
+                  {activeView === 'form' ? 'Editing' : 
+                   activeView === 'preview' ? 'Preview' : 
+                   status}
                 </Badge>
               </div>
             </div>
-
-            {itinerary.participants && itinerary.participants.length > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {itinerary.participants.map((participant) => (
-                    <Avatar key={participant.id} className="border-2 border-white">
-                      <AvatarFallback className="bg-white text-primary">
-                        {participant.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -244,24 +412,281 @@ const ItineraryView = () => {
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3">
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4">
+            <TabsTrigger value="form" className="flex items-center gap-2">
+              <Edit3 className="h-4 w-4" />
+              Form
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex items-center gap-2" disabled={!existingItinerary}>
               <List className="h-4 w-4" />
-              Timeline
+              Activities
             </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <Map className="h-4 w-4" />
-              Map
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2">
+            <TabsTrigger value="chat" className="flex items-center gap-2" disabled={!existingItinerary}>
               <MessageCircle className="h-4 w-4" />
-              Discussion
+              Chat
             </TabsTrigger>
           </TabsList>
 
+          {/* Form Tab */}
+          <TabsContent value="form" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Trip Information</CardTitle>
+                <CardDescription>
+                  {isEditing ? "Edit your trip details" : "Enter the basic details for your trip"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Trip Title</label>
+                    <Input
+                      placeholder="Enter your trip title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Description</label>
+                    <Textarea
+                      placeholder="Describe your trip..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Start Date</label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">End Date</label>
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Status</label>
+                      <Select value={status} onValueChange={(value: 'planning' | 'active' | 'completed') => setStatus(value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="planning">Planning</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Theme</label>
+                      <Select value={image} onValueChange={setImage}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gradient-sky">Sky Blue</SelectItem>
+                          <SelectItem value="gradient-sunset">Sunset Orange</SelectItem>
+                          <SelectItem value="gradient-ocean">Ocean Blue</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Meeting Point */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Meeting Point</CardTitle>
+                <CardDescription>Where will your group meet?</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="Enter meeting point address"
+                  value={meetingPoint}
+                  onChange={(e) => setMeetingPoint(e.target.value)}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Destinations */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Destinations</CardTitle>
+                    <CardDescription>Add the places you want to visit</CardDescription>
+                  </div>
+                  <Button onClick={addLocation} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Location
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {locations.map((location, index) => (
+                    <div key={location.id} className="flex items-start gap-3 p-4 border rounded-lg">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm mt-1">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <Input
+                          placeholder="Location name"
+                          value={location.name}
+                          onChange={(e) => updateLocation(location.id, 'name', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Address (optional)"
+                          value={location.address}
+                          onChange={(e) => updateLocation(location.id, 'address', e.target.value)}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeLocation(location.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {locations.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No destinations added yet</p>
+                      <p className="text-sm">Click "Add Location" to get started</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-between">
+              <div className="flex gap-3">
+                <Button onClick={handleSaveDraft} variant="outline" disabled={isCreating}>
+                  {isCreating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Draft
+                </Button>
+                <Button onClick={handlePreview} variant="outline" disabled={!title}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+              </div>
+              <Button onClick={handleCreateItinerary} disabled={!title || isCreating}>
+                {isCreating ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : null}
+                {isEditing ? 'Update Itinerary' : 'Create Itinerary'}
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Preview Tab */}
+          <TabsContent value="preview" className="space-y-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Badge variant="secondary">Preview Mode</Badge>
+              <Button onClick={() => setActiveView('form')} variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Edit
+              </Button>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{title || "Untitled Trip"}</CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  {startDate && endDate && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {locations.filter(l => l.name).length} destinations
+                  </div>
+                </div>
+
+                {meetingPoint && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Users className="h-4 w-4" />
+                      <span className="font-medium text-sm">Meeting Point</span>
+                    </div>
+                    <p className="text-sm">{meetingPoint}</p>
+                  </div>
+                )}
+
+                {locations.filter(l => l.name).length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3">Destinations</h4>
+                    <div className="space-y-2">
+                      {locations.filter(l => l.name).map((location, index) => (
+                        <div key={location.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium">{location.name}</p>
+                            {location.address && (
+                              <p className="text-sm text-muted-foreground">{location.address}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-3 justify-end">
+              <Button onClick={() => setActiveView('form')} variant="outline">
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit Itinerary
+              </Button>
+              <Button onClick={handleCreateItinerary} disabled={!title || isCreating}>
+                {isCreating ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : null}
+                {isEditing ? 'Update Itinerary' : 'Create Itinerary'}
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Activities Tab */}
           <TabsContent value="timeline" className="space-y-6">
-            {itinerary.locations && itinerary.locations.length > 0 ? (
-              itinerary.locations.map((location, locationIndex) => {
+            {existingItinerary?.locations && existingItinerary.locations.length > 0 ? (
+              existingItinerary.locations.map((location, locationIndex) => {
                 const locationActivities = getActivitiesForLocation(locationIndex);
                 
                 return (
@@ -321,26 +746,13 @@ const ItineraryView = () => {
                 <CardContent className="p-8 text-center">
                   <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No locations added yet</h3>
-                  <p className="text-muted-foreground">Start planning by adding destinations to your itinerary</p>
+                  <p className="text-muted-foreground">Create your itinerary first to add activities</p>
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="map" className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Map className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
-                    <p className="text-muted-foreground">Map integration coming soon</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
+          {/* Chat Tab */}
           <TabsContent value="chat" className="space-y-6">
             <Card>
               <CardHeader>
@@ -349,17 +761,17 @@ const ItineraryView = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-4">
-                  {itinerary.participants && itinerary.participants.length > 0 ? (
+                  {existingItinerary?.participants && existingItinerary.participants.length > 0 ? (
                     <>
                       <div className="flex gap-3">
                         <Avatar>
-                          <AvatarFallback>{itinerary.participants[0].initials}</AvatarFallback>
+                          <AvatarFallback>{existingItinerary.participants[0].initials}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="bg-muted p-3 rounded-lg">
                             <p className="text-sm">Looking forward to this trip! 🎉</p>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">{itinerary.participants[0].name} • Just now</p>
+                          <p className="text-xs text-muted-foreground mt-1">{existingItinerary.participants[0].name} • Just now</p>
                         </div>
                       </div>
                     </>
@@ -401,4 +813,4 @@ const ItineraryView = () => {
   );
 };
 
-export default ItineraryView;
+export default CreateItineraryView;

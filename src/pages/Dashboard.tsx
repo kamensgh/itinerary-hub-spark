@@ -151,7 +151,7 @@ const Dashboard = () => {
               <h1 className="text-3xl md:text-4xl font-bold">My Itineraries</h1>
             </div>
             <div className="flex items-center gap-3">
-            <Button onClick={() => setIsFormOpen(true)} className="bg-white text-primary hover:bg-white/90">
+            <Button onClick={() => navigate('/itinerary/new')} className="bg-white text-primary hover:bg-white/90">
               <Plus className="h-4 w-4 mr-2" />
               New Trip
             </Button>
@@ -296,7 +296,7 @@ const Dashboard = () => {
                 }
               </p>
               {(!searchTerm && statusFilter === 'all') && (
-                <Button onClick={() => setIsFormOpen(true)}>
+                <Button onClick={() => navigate('/itinerary/new')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Trip
                 </Button>
@@ -317,7 +317,7 @@ const Dashboard = () => {
           {(filteredItineraries.length > 0 || (!searchTerm && statusFilter === 'all')) && (
             <Card 
               className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
-              onClick={() => setIsFormOpen(true)}
+              onClick={() => navigate('/itinerary/new')}
             >
               <CardContent className="flex flex-col items-center justify-center h-80 text-center">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
