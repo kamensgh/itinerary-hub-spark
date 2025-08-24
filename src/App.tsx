@@ -7,6 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import CreateItineraryView from "./pages/ItineraryView";
 import ItineraryPreview from "./pages/ItineraryPreview";
+import ItineraryViewOnly from "./pages/ItineraryViewOnly";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/itinerary/new" element={<CreateItineraryView />} />
             <Route path="/itinerary/:id" element={<CreateItineraryView />} />
+            <Route path="/itinerary/:id/view" element={<ItineraryViewOnly />} />
             <Route path="/itinerary/preview" element={<ItineraryPreview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

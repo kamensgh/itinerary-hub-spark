@@ -28,8 +28,9 @@ import type { Activity } from "@/hooks/useActivities";
 
 interface ActivityCardProps {
   activity: Activity;
-  onEdit: (activity: Activity) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (activity: Activity) => void;
+  onDelete?: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const getActivityIcon = (type: string) => {
@@ -84,7 +85,7 @@ const formatDate = (date: string) => {
   }
 };
 
-export const ActivityCard = ({ activity, onEdit, onDelete }: ActivityCardProps) => {
+export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityCardProps) => {
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -109,44 +110,46 @@ export const ActivityCard = ({ activity, onEdit, onDelete }: ActivityCardProps) 
               </div>
             </div>
           </div>
-          <div className="flex gap-1 ml-2 flex-shrink-0">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onEdit(activity)}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Activity</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{activity.name}"? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={() => onDelete(activity.id)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {!readOnly && (
+            <div className="flex gap-1 ml-2 flex-shrink-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onEdit && onEdit(activity)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                   >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{activity.name}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => onDelete && onDelete(activity.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
         </div>
       </CardHeader>
 

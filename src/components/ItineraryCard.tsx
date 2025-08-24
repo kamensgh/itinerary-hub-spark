@@ -12,6 +12,7 @@ import {
 import { Calendar, MapPin, Share2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Itinerary } from '@/hooks/useItineraries';
+import { toast } from '@/hooks/use-toast';
 
 interface ItineraryCardProps {
   itinerary: Itinerary;
@@ -43,6 +44,15 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
       month: 'short',
       day: 'numeric',
       year: 'numeric'
+    });
+  };
+
+  const handleShare = () => {
+    const shareUrl = `${window.location.origin}/itinerary/${itinerary.id}/view`;
+    navigator.clipboard.writeText(shareUrl);
+    toast({
+      title: `${itinerary.title} share link copied`,
+      description: 'The link has been copied to your clipboard.',
     });
   };
 
@@ -129,7 +139,7 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" variant="ghost">
+            <Button size="sm" variant="ghost" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </Button>
             <Link to={`/itinerary/${itinerary.id}`}>

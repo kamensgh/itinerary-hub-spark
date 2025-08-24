@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +74,7 @@ const CreateItineraryView = () => {
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [existingItinerary, setExistingItinerary] = useState<Itinerary | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const {
     activities,
@@ -351,7 +352,14 @@ const CreateItineraryView = () => {
   return (
     <div className="min-h-screen bg-gradient-sky">
       {/* Header */}
-      <div className="bg-gradient-sunset text-white">
+      <div
+        className="text-white"
+        style={{
+          background: image && image !== 'gradient-sky'
+            ? `linear-gradient(90deg, #38bdf8 0%, #6366f1 100%), url('${image}') center/cover no-repeat`
+            : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
+        }}
+      >
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4">
             <Link to="/dashboard">
@@ -372,9 +380,75 @@ const CreateItineraryView = () => {
                   Edit
                 </Button>
               )}
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-white hover:bg-white/20"
+                onClick={() => {
+                  if (existingItinerary?.id) {
+                    const shareUrl = `${window.location.origin}/itinerary/${existingItinerary.id}/view`;
+                    navigator.clipboard.writeText(shareUrl);
+                    toast({
+                      title: `${existingItinerary.title} share link copied`,
+                      description: "The link has been copied to your clipboard.",
+                    });
+                  } else {
+                    toast({
+                      title: "Itinerary not saved yet",
+                      description: "Save your itinerary before sharing.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
+              </Button>
+              <input
+                type="file"
+                accept="image/*"
+                ref={coverInputRef}
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  if (!e.target.files || !existingItinerary) return;
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  const fileExt = file.name.split('.').pop();
+                  const fileName = `cover_${existingItinerary.id}.${fileExt}`;
+                  // Remove existing file if present (Supabase Storage upsert is not always reliable for overwrites)
+                  await supabase.storage.from('itinerary-covers').remove([fileName]);
+                  // Upload to Supabase Storage
+                  const { error: uploadError } = await supabase.storage
+                    .from('itinerary-covers')
+                    .upload(fileName, file);
+                  if (uploadError) {
+                    toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
+                    return;
+                  }
+                  const { data: urlData } = supabase.storage.from('itinerary-covers').getPublicUrl(fileName);
+                  if (!urlData?.publicUrl) {
+                    toast({ title: 'Failed to get image URL', variant: 'destructive' });
+                    return;
+                  }
+                  const { error: updateError } = await supabase
+                    .from('itineraries')
+                    .update({ image: urlData.publicUrl })
+                    .eq('id', existingItinerary.id);
+                  if (updateError) {
+                    toast({ title: 'Failed to update cover', description: updateError.message, variant: 'destructive' });
+                    return;
+                  }
+                  setImage(urlData.publicUrl);
+                  toast({ title: 'Cover updated!' });
+                }}
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                className="text-primary"
+                onClick={() => coverInputRef.current?.click()}
+              >
+                Update Cover
               </Button>
             </div>
           </div>
