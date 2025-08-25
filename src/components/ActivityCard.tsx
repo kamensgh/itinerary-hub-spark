@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import type { Activity } from "@/hooks/useActivities";
+import { toSentenceCase } from "@/lib/sentenceCase";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -97,7 +98,7 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
               {getActivityIcon(activity.activity_type)}
             </div>
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg leading-tight">{activity.name}</CardTitle>
+              <CardTitle className="text-lg leading-tight">{toSentenceCase(activity.name)}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className="text-xs">
                   {activity.activity_type.replace('_', ' ')}
@@ -153,19 +154,8 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Image */}
-        {activity.image_url && !imageError && (
-          <div className="aspect-video relative rounded-lg overflow-hidden">
-            <img
-              src={activity.image_url}
-              alt={activity.name}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          </div>
-        )}
-
+      <CardContent className="flex justify-between md:flex-row flex-col">
+       <div>
         {/* Description */}
         {activity.description && (
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -198,7 +188,7 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
           {activity.address && (
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span className="break-words">{activity.address}</span>
+              <span className="break-words">{toSentenceCase(activity.address)}</span>
             </div>
           )}
           
@@ -237,6 +227,23 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
             </p>
           </div>
         )}
+
+       </div>
+
+       <div>
+         {/* Image */}
+        {activity.image_url && !imageError && (
+          <div className="relative rounded-lg flex justify-end items-center">
+            <img
+              src={activity.image_url}
+              alt={activity.name}
+              className="md:w-1/4 w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          </div>
+        )}
+       </div>
+
       </CardContent>
     </Card>
   );

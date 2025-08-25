@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { useItineraries } from "@/hooks/useItineraries";
 import { toast } from "sonner";
 import { useState } from "react";
+import { toSentenceCase } from "@/lib/sentenceCase";
 
 const ItineraryPreview = () => {
   const location = useLocation();
@@ -90,9 +91,9 @@ const ItineraryPreview = () => {
           {/* Trip Overview */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">{data.title || "Untitled Trip"}</CardTitle>
+              <CardTitle className="text-2xl">{toSentenceCase(data.title) || "Untitled Trip"}</CardTitle>
               <CardDescription className="text-base">
-                {data.description || "No description provided"}
+                {toSentenceCase(data.description) || "No description provided"}
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -2,11 +2,14 @@
 import { useParams } from "react-router-dom";
 import { useActivities } from "@/hooks/useActivities";
 import { useEffect, useState } from "react";
+import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin, Calendar, Share2 } from "lucide-react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ItineraryParticipant {
   id: string;
@@ -58,7 +61,23 @@ const ItineraryViewOnly = () => {
     fetchItinerary();
   }, [id]);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+   if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-sky">
+        <div className="container mx-auto px-4 py-6">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-6 w-3/4" />
+            <div className="grid gap-4">
+              <Skeleton className="h-40 w-full" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleShare = () => {
     if (itinerary) {
@@ -85,22 +104,24 @@ const ItineraryViewOnly = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <h1 className="text-3xl md:text-4xl font-bold">
-              {itinerary?.title || "Itinerary"}
+              {toSentenceCase(itinerary?.title) || "Itinerary"}
             </h1>
             {itinerary && (
               <div className="flex gap-2">
-                <button
-                  onClick={handleShare}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition"
-                  title="Copy share link"
-                >
-                  Share
-                </button>
+                 <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-white hover:bg-white/20"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
               </div>
             )}
           </div>
           <p className="text-lg opacity-90 mb-4">
-            {itinerary?.description || "Plan your next adventure"}
+            {toSentenceCase(itinerary?.description) || "Plan your next adventure"}
           </p>
           <div className="flex flex-wrap gap-4 text-sm mb-2">
             {itinerary?.start_date && itinerary?.end_date && (
@@ -138,7 +159,7 @@ const ItineraryViewOnly = () => {
             return (
               <Card key={location} className="mb-6">
                 <CardHeader>
-                  <CardTitle className="text-xl">{location}</CardTitle>
+                  <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4" />
                     {locationActivities.length} activities

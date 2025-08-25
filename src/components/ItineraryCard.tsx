@@ -12,6 +12,7 @@ import {
 import { Calendar, MapPin, Share2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Itinerary } from '@/hooks/useItineraries';
+import { toSentenceCase } from '@/lib/sentenceCase';
 import { toast } from '@/hooks/use-toast';
 
 interface ItineraryCardProps {
@@ -91,9 +92,9 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg mb-1">{itinerary.title}</CardTitle>
+            <CardTitle className="text-lg mb-1">{toSentenceCase(itinerary.title)}</CardTitle>
             <CardDescription className="text-sm">
-              {itinerary.description}
+              {toSentenceCase(itinerary.description)}
             </CardDescription>
           </div>
         </div>

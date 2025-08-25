@@ -29,6 +29,7 @@ import {
   Save,
   Eye,
   Trash2,
+  Image,
   X
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -41,6 +42,8 @@ import { ActivityForm } from "@/components/ActivityForm";
 import { ActivityCard } from "@/components/ActivityCard";
 import type { Itinerary } from "@/hooks/useItineraries";
 import type { Activity, CreateActivityData } from "@/hooks/useActivities";
+import { toSentenceCase } from "@/lib/sentenceCase";
+
 
 interface LocationData {
   id: string;
@@ -361,7 +364,7 @@ const CreateItineraryView = () => {
         }}
       >
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap">
             <Link to="/dashboard">
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -443,11 +446,12 @@ const CreateItineraryView = () => {
                 }}
               />
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
-                className="text-primary"
+                className="text-white hover:bg-white/20"
                 onClick={() => coverInputRef.current?.click()}
               >
+                <Image className="h-4 w-4 mr-2" />
                 Update Cover
               </Button>
             </div>
@@ -455,11 +459,11 @@ const CreateItineraryView = () => {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                {title || (isEditing ? existingItinerary?.title : "Create New Trip")}
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 normal-case">
+                {toSentenceCase(title) || (isEditing ? toSentenceCase(existingItinerary?.title) : "Create New Trip")}
               </h1>
               <p className="text-lg opacity-90 mb-4">
-                {description || (isEditing ? existingItinerary?.description : "Plan your next adventure")}
+                {toSentenceCase(description) || (isEditing ? toSentenceCase(existingItinerary?.description) : "Plan your next adventure")}
               </p>
               <div className="flex flex-wrap gap-4 text-sm">
                 {(startDate && endDate) && (
@@ -509,7 +513,7 @@ const CreateItineraryView = () => {
           <TabsContent value="form" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Trip Information</CardTitle>
+                <CardTitle>Trip information</CardTitle>
                 <CardDescription>
                   {isEditing ? "Edit your trip details" : "Enter the basic details for your trip"}
                 </CardDescription>
@@ -589,7 +593,7 @@ const CreateItineraryView = () => {
             {/* Meeting Point */}
             <Card>
               <CardHeader>
-                <CardTitle>Meeting Point</CardTitle>
+                <CardTitle>Meeting point</CardTitle>
                 <CardDescription>Where will your group meet?</CardDescription>
               </CardHeader>
               <CardContent>
@@ -693,8 +697,8 @@ const CreateItineraryView = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{title || "Untitled Trip"}</CardTitle>
-                {description && <CardDescription>{description}</CardDescription>}
+                <CardTitle>{toSentenceCase(title) || "Untitled Trip"}</CardTitle>
+                {description && <CardDescription>{toSentenceCase(description)}</CardDescription>}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -706,7 +710,7 @@ const CreateItineraryView = () => {
                   )}
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    {locations.filter(l => l.name).length} destinations
+                    {locations.filter(l => l.name).length} Destination(s)
                   </div>
                 </div>
 
@@ -730,7 +734,7 @@ const CreateItineraryView = () => {
                             {index + 1}
                           </div>
                           <div>
-                            <p className="font-medium">{location.name}</p>
+                            <p className="font-medium">{toSentenceCase(location.name)}</p>
                             {location.address && (
                               <p className="text-sm text-muted-foreground">{location.address}</p>
                             )}
@@ -772,7 +776,7 @@ const CreateItineraryView = () => {
                             {locationIndex + 1}
                           </div>
                           <div>
-                            <CardTitle className="text-xl">{location}</CardTitle>
+                            <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
                             <CardDescription className="flex items-center gap-1">
                               <MapPin className="h-4 w-4" />
                               Destination • {locationActivities.length} activities
@@ -830,7 +834,7 @@ const CreateItineraryView = () => {
           <TabsContent value="chat" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Team Discussion</CardTitle>
+                <CardTitle>Team discussion</CardTitle>
                 <CardDescription>Collaborate with your travel companions</CardDescription>
               </CardHeader>
               <CardContent>

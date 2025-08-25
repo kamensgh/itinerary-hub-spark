@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toSentenceCase } from "@/lib/sentenceCase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,8 +83,8 @@ const Dashboard = () => {
 
   // Filter and search logic
   const filteredItineraries = itineraries.filter(itinerary => {
-    const matchesSearch = itinerary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         itinerary.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = toSentenceCase(itinerary.title).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         toSentenceCase(itinerary.description)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          itinerary.locations.some(location => location.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'all' || itinerary.status === statusFilter;
