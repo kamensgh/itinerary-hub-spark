@@ -95,6 +95,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          meetingPoint: { name?: string; link?: string } 
         }
         Insert: {
           created_at?: string
@@ -108,6 +109,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          meetingPoint: { name?: string; link?: string } 
         }
         Update: {
           created_at?: string
@@ -121,6 +123,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          meetingPoint: { name?: string; link?: string } 
         }
         Relationships: []
       }

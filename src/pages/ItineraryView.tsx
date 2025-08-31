@@ -44,7 +44,6 @@ import type { Itinerary } from "@/hooks/useItineraries";
 import type { Activity, CreateActivityData } from "@/hooks/useActivities";
 import { toSentenceCase } from "@/lib/sentenceCase";
 
-
 interface LocationData {
   id: string;
   name: string;
@@ -64,7 +63,7 @@ const CreateItineraryView = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [locations, setLocations] = useState<LocationData[]>([]);
-  const [meetingPoint, setMeetingPoint] = useState("");
+  const [meetingPoint, setMeetingPoint] = useState<{ name: string; link: string }>({ name: "", link: "" });
   const [status, setStatus] = useState<'planning' | 'active' | 'completed'>('planning');
   const [image, setImage] = useState('gradient-sky');
   
@@ -90,13 +89,20 @@ const CreateItineraryView = () => {
 
   // Initialize form data
   useEffect(() => {
-    const incomingData = location.state?.itinerary;
+    const incomingData = location.state?.itinerary;    
     if (incomingData) {
       setTitle(incomingData.title || "");
       setDescription(incomingData.description || "");
       setStartDate(incomingData.startDate || "");
       setEndDate(incomingData.endDate || "");
-      setMeetingPoint(incomingData.meetingPoint || "");
+      if (typeof incomingData.meetingPoint === 'object' && incomingData.meetingPoint !== null) {
+        setMeetingPoint({
+          name: incomingData.meetingPoint.name || "",
+          link: incomingData.meetingPoint.link || ""
+        });
+      } else {
+        setMeetingPoint({ name: incomingData.meetingPoint || "", link: "" });
+      }
       
       if (incomingData.locations && incomingData.locations.length > 0) {
         setLocations(incomingData.locations.map((loc: any, index: number) => ({
@@ -163,6 +169,10 @@ const CreateItineraryView = () => {
       })) || []);
       setIsEditing(true);
       setActiveView("timeline");
+      setMeetingPoint({
+          name: itinerary.meetingPoint?.name || "",
+          link: itinerary.meetingPoint?.link || ""
+        });
     } catch (error) {
       console.error('Error fetching itinerary:', error);
       toast({
@@ -208,7 +218,6 @@ const CreateItineraryView = () => {
       </div>
     );
   }
-
   // Preview and save functions
   const handlePreview = () => {
     if (!title) {
@@ -240,6 +249,7 @@ const CreateItineraryView = () => {
         status: 'planning',
         image,
         locations: locations.map(loc => loc.name).filter(Boolean),
+        meetingPoint,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
       };
@@ -293,6 +303,7 @@ const CreateItineraryView = () => {
         locations: locations.map(loc => loc.name).filter(Boolean),
         start_date: startDate || undefined,
         end_date: endDate || undefined,
+        meetingPoint: { name : meetingPoint.name , link: meetingPoint.link } 
       };
 
       let finalItinerary;
@@ -597,11 +608,18 @@ const CreateItineraryView = () => {
                 <CardDescription>Where will your group meet?</CardDescription>
               </CardHeader>
               <CardContent>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder="Enter meeting point address"
-                  value={meetingPoint}
-                  onChange={(e) => setMeetingPoint(e.target.value)}
+                  placeholder="Meeting point name (e.g. Main Entrance, Lobby)"
+                  value={meetingPoint.name}
+                  onChange={e => setMeetingPoint(mp => ({ ...mp, name: e.target.value }))}
                 />
+                <Input
+                  placeholder="Link to location (Google Maps, etc)"
+                  value={meetingPoint.link}
+                  onChange={e => setMeetingPoint(mp => ({ ...mp, link: e.target.value }))}
+                />
+              </div>
               </CardContent>
             </Card>
 
@@ -714,13 +732,23 @@ const CreateItineraryView = () => {
                   </div>
                 </div>
 
-                {meetingPoint && (
+                {(meetingPoint.name || meetingPoint.link) && (
                   <div className="p-3 bg-muted rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <Users className="h-4 w-4" />
                       <span className="font-medium text-sm">Meeting Point</span>
                     </div>
-                    <p className="text-sm">{meetingPoint}</p>
+                    {meetingPoint.name && <p className="text-sm font-medium">{meetingPoint.name}</p>}
+                    {meetingPoint.link && (
+                      <a
+                        href={meetingPoint.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 underline break-all"
+                      >
+                        {meetingPoint.link}
+                      </a>
+                    )}
                   </div>
                 )}
 

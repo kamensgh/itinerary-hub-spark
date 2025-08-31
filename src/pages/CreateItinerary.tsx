@@ -22,7 +22,7 @@ const CreateItinerary = () => {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [locations, setLocations] = useState<Array<{ id: string; name: string; address: string }>>([]);
-  const [meetingPoint, setMeetingPoint] = useState("");
+  const [meetingPoint, setMeetingPoint] = useState<{ name: string; link: string }>({ name: "", link: "" });
   const [isCreating, setIsCreating] = useState(false);
   
   const { createItinerary } = useItineraries();
@@ -46,7 +46,14 @@ const CreateItinerary = () => {
           address: loc.address || ""
         })));
       }
-      setMeetingPoint(incomingData.meetingPoint || "");
+      if (typeof incomingData.meetingPoint === 'object' && incomingData.meetingPoint !== null) {
+        setMeetingPoint({
+          name: incomingData.meetingPoint.name || "",
+          link: incomingData.meetingPoint.link || ""
+        });
+      } else {
+        setMeetingPoint({ name: incomingData.meetingPoint || "", link: "" });
+      }
     }
   }, [incomingData]);
 
@@ -95,6 +102,7 @@ const CreateItinerary = () => {
         start_date: startDate?.toISOString().split('T')[0],
         end_date: endDate?.toISOString().split('T')[0],
         locations: locations.filter(loc => loc.name.trim() !== "").map(loc => `${loc.name}${loc.address ? ` - ${loc.address}` : ""}`),
+        meetingPoint, 
         status: "planning" as const
       };
 
@@ -250,19 +258,20 @@ const CreateItinerary = () => {
               <CardDescription>Where will your group meet to start the trip?</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input 
-                      value={meetingPoint}
-                      onChange={(e) => setMeetingPoint(e.target.value)}
-                      placeholder="Search for pickup location..."
-                      className="text-lg"
-                    />
-                  </div>
-                  <Button variant="outline">
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Meeting point name (e.g. Main Entrance, Lobby)"
+                  value={meetingPoint.name}
+                  onChange={e => setMeetingPoint(mp => ({ ...mp, name: e.target.value }))}
+                  className="text-lg"
+                />
+                <Input
+                  placeholder="Link to location (Google Maps, etc)"
+                  value={meetingPoint.link}
+                  onChange={e => setMeetingPoint(mp => ({ ...mp, link: e.target.value }))}
+                  className="text-lg"
+                />
+              </div>
             </CardContent>
           </Card>
 

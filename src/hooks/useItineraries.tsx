@@ -16,6 +16,7 @@ export interface Itinerary {
   created_at: string;
   updated_at: string;
   participants?: ItineraryParticipant[];
+  meetingPoint?: { name?: string; link?: string };
 }
 
 export interface ItineraryParticipant {
@@ -34,6 +35,7 @@ export interface CreateItineraryData {
   end_date?: string;
   locations?: string[];
   image?: string;
+  meetingPoint?: { name?: string; link?: string };
 }
 
 export const useItineraries = () => {

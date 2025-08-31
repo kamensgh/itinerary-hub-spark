@@ -18,6 +18,10 @@ const formSchema = z.object({
   end_date: z.string().optional(),
   locations: z.string().optional(),
   image: z.string().default('gradient-sky'),
+  meetingPoint: z.object({
+    name: z.string().optional(),
+    link: z.string().optional(),
+  }).optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -47,6 +51,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
       end_date: '',
       locations: '',
       image: 'gradient-sky',
+      meetingPoint: { name:'', link:'' }
     },
   });
 
@@ -61,6 +66,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         end_date: initialData.end_date || '',
         locations: initialData.locations?.join(', ') || '',
         image: initialData.image || 'gradient-sky',
+        meetingPoint: initialData.meetingPoint || { name:'', link:'' }
       });
     } else if (isOpen && !initialData) {
       // Reset to empty form for new itinerary
@@ -72,6 +78,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         end_date: '',
         locations: '',
         image: 'gradient-sky',
+        meetingPoint: { name:'', link:'' }
       });
     }
   }, [isOpen, initialData, form]);
@@ -86,6 +93,10 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         locations: data.locations ? data.locations.split(',').map(loc => loc.trim()).filter(Boolean) : [],
         start_date: data.start_date || undefined,
         end_date: data.end_date || undefined,
+        meetingPoint: data.meetingPoint && (data.meetingPoint.name || data.meetingPoint.link) ? {
+          name: data.meetingPoint.name,
+          link: data.meetingPoint.link
+        } : undefined,
       };
       
       await onSubmit(formattedData);

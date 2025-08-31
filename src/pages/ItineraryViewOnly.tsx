@@ -29,6 +29,7 @@ interface Itinerary {
   status?: string;
   participants?: ItineraryParticipant[];
   image?: string; // cover image url
+  meetingPoint?: { name?: string; link?: string } | string;
 }
 
 const ItineraryViewOnly = () => {
@@ -43,7 +44,7 @@ const ItineraryViewOnly = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('itineraries')
-        .select('id, title, description, locations, start_date, end_date, status, image, itinerary_participants(id, name, initials, email)')
+        .select('id, title, description, locations, start_date, end_date, status, image, meetingPoint, itinerary_participants(id, name, initials, email)')
         .eq('id', id)
         .single();
       if (!error && data) {
@@ -89,7 +90,6 @@ const ItineraryViewOnly = () => {
       });
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-sky">
@@ -150,9 +150,44 @@ const ItineraryViewOnly = () => {
               </div>
             )}
           </div>
+
+          {/* (Meeting Point section moved below) */}
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
+        {/* Meeting Point Card */}
+        {(() => {
+          let meetingPoint = itinerary?.meetingPoint;
+          console.log(meetingPoint);
+          
+          if (typeof meetingPoint === 'string') {
+            meetingPoint = { name: meetingPoint };
+          }
+          if (meetingPoint && (meetingPoint.name || meetingPoint.link)) {
+            return (
+              <Card className="mb-6 max-w-lg mx-auto">
+                <CardHeader>
+                  <CardTitle className="text-lg">Meeting Point</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {meetingPoint.name && <div className="text-base font-medium mb-1">{meetingPoint.name}</div>}
+                  {meetingPoint.link && (
+                    <a
+                      href={meetingPoint.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 underline break-all"
+                    >
+                      {meetingPoint.link}
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
+          return null;
+        })()}
+
         {itinerary && itinerary.locations && itinerary.locations.length > 0 ? (
           itinerary.locations.map((location, idx) => {
             const locationActivities = activities.filter(a => a.location_index === idx);
