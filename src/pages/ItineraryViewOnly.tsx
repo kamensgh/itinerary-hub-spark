@@ -160,19 +160,22 @@ const ItineraryViewOnly = () => {
         {/* Meeting Point Card */}
         {(() => {
           let meetingPoint = itinerary?.meetingPoint;
-          console.log(meetingPoint);
           
           if (typeof meetingPoint === 'string') {
             meetingPoint = { name: meetingPoint };
           }
           if (meetingPoint && (meetingPoint.name || meetingPoint.link)) {
             return (
-              <Card className="mb-6 max-w-lg mx-auto">
+              <Card className="mb-6 mx-auto">
                 <CardHeader>
                   <CardTitle className="text-lg">Meeting Point</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {meetingPoint.name && <div className="text-base font-medium mb-1">{meetingPoint.name}</div>}
+                <div className="px-6 pb-6">
+                  {meetingPoint.name && (
+                    <div className="text-base font-medium mb-1">
+                      {toSentenceCase(meetingPoint.name)}
+                    </div>
+                  )}
                   {meetingPoint.link && (
                     <a
                       href={meetingPoint.link}
@@ -183,7 +186,7 @@ const ItineraryViewOnly = () => {
                       {meetingPoint.link}
                     </a>
                   )}
-                </CardContent>
+                </div>
               </Card>
             );
           }
