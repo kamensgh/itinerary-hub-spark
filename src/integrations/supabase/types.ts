@@ -90,12 +90,12 @@ export type Database = {
           id: string
           image: string | null
           locations: string[] | null
+          meetingpoint: Json | null
           start_date: string | null
           status: string
           title: string
           updated_at: string
           user_id: string
-          meetingPoint: { name?: string; link?: string } 
         }
         Insert: {
           created_at?: string
@@ -104,12 +104,12 @@ export type Database = {
           id?: string
           image?: string | null
           locations?: string[] | null
+          meetingpoint?: Json | null
           start_date?: string | null
           status?: string
           title: string
           updated_at?: string
           user_id: string
-          meetingPoint: { name?: string; link?: string } 
         }
         Update: {
           created_at?: string
@@ -118,12 +118,12 @@ export type Database = {
           id?: string
           image?: string | null
           locations?: string[] | null
+          meetingpoint?: Json | null
           start_date?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id?: string
-          meetingPoint: { name?: string; link?: string } 
         }
         Relationships: []
       }
