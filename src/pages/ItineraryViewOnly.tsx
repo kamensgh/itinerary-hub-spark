@@ -44,16 +44,18 @@ const ItineraryViewOnly = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('itineraries')
-        .select('id, title, description, locations, start_date, end_date, status, image, meetingPoint, itinerary_participants(id, name, initials, email)')
+        .select('id, title, description, locations, start_date, end_date, status, image, meetingpoint, itinerary_participants(id, name, initials, email)')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       if (!error && data) {
         type SupabaseParticipant = Omit<ItineraryParticipant, 'itinerary_id'> & { itinerary_id?: string };
+        const rawData = data as any;
         setItinerary({
-          ...data,
-          participants: (data.itinerary_participants || []).map((p: SupabaseParticipant) => ({
+          ...rawData,
+          meetingPoint: rawData.meetingpoint || { name: '', link: '' },
+          participants: (rawData.itinerary_participants || []).map((p: SupabaseParticipant) => ({
             ...p,
-            itinerary_id: p.itinerary_id ?? data.id,
+            itinerary_id: p.itinerary_id ?? rawData.id,
           })),
         });
       }
