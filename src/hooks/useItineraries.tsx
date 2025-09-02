@@ -72,7 +72,7 @@ export const useItineraries = () => {
               ...itinerary, 
               participants: [],
               status: itinerary.status as 'planning' | 'active' | 'completed',
-              meetingPoint: itinerary.meetingPoint || { name: '', link: '' }
+              meetingPoint: (itinerary as any).meetingpoint || { name: '', link: '' }
             };
           }
 
@@ -80,7 +80,7 @@ export const useItineraries = () => {
             ...itinerary, 
             participants: participants || [],
             status: itinerary.status as 'planning' | 'active' | 'completed',
-            meetingPoint: itinerary.meetingPoint || { name: '', link: '' }
+            meetingPoint: (itinerary as any).meetingpoint || { name: '', link: '' }
           };
         })
       );
@@ -111,12 +111,12 @@ export const useItineraries = () => {
         locations: data.locations || [],
         image: data.image || 'gradient-sky',
         user_id: user.id,
-        meetingPoint: data.meetingPoint || { name: '', link: '' }
+        meetingpoint: data.meetingPoint || { name: '', link: '' }
       };
 
       const { data: newItinerary, error } = await supabase
         .from('itineraries')
-        .insert([insertData])
+        .insert([insertData as any])
         .select()
         .single();
 
@@ -153,7 +153,7 @@ export const useItineraries = () => {
       if (data.end_date !== undefined) updateData.end_date = data.end_date;
       if (data.locations !== undefined) updateData.locations = data.locations;
       if (data.image !== undefined) updateData.image = data.image;
-      if (data.meetingPoint !== undefined) updateData.meetingPoint = data.meetingPoint;
+      if (data.meetingPoint !== undefined) updateData.meetingpoint = data.meetingPoint;
 
       const { error } = await supabase
         .from('itineraries')
