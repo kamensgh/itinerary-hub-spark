@@ -71,14 +71,16 @@ export const useItineraries = () => {
             return { 
               ...itinerary, 
               participants: [],
-              status: itinerary.status as 'planning' | 'active' | 'completed'
+              status: itinerary.status as 'planning' | 'active' | 'completed',
+              meetingPoint: itinerary.meetingPoint || { name: '', link: '' }
             };
           }
 
           return { 
             ...itinerary, 
             participants: participants || [],
-            status: itinerary.status as 'planning' | 'active' | 'completed'
+            status: itinerary.status as 'planning' | 'active' | 'completed',
+            meetingPoint: itinerary.meetingPoint || { name: '', link: '' }
           };
         })
       );
@@ -100,9 +102,21 @@ export const useItineraries = () => {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      const insertData = {
+        title: data.title,
+        description: data.description,
+        status: data.status || 'planning',
+        start_date: data.start_date,
+        end_date: data.end_date,
+        locations: data.locations || [],
+        image: data.image || 'gradient-sky',
+        user_id: user.id,
+        meetingPoint: data.meetingPoint || { name: '', link: '' }
+      };
+
       const { data: newItinerary, error } = await supabase
         .from('itineraries')
-        .insert([{ ...data, user_id: user.id }])
+        .insert([insertData])
         .select()
         .single();
 
@@ -130,9 +144,20 @@ export const useItineraries = () => {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      const updateData: any = {};
+      
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.start_date !== undefined) updateData.start_date = data.start_date;
+      if (data.end_date !== undefined) updateData.end_date = data.end_date;
+      if (data.locations !== undefined) updateData.locations = data.locations;
+      if (data.image !== undefined) updateData.image = data.image;
+      if (data.meetingPoint !== undefined) updateData.meetingPoint = data.meetingPoint;
+
       const { error } = await supabase
         .from('itineraries')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id);
 

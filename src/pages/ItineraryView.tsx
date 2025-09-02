@@ -444,10 +444,11 @@ const CreateItineraryView = () => {
                     toast({ title: 'Failed to get image URL', variant: 'destructive' });
                     return;
                   }
-                  const { error: updateError } = await supabase
-                    .from('itineraries')
-                    .update({ image: urlData.publicUrl })
-                    .eq('id', existingItinerary.id);
+                  const updateError = await updateItinerary(existingItinerary.id, { 
+                    image: urlData.publicUrl 
+                  })
+                    .then(() => null)
+                    .catch((error) => error);
                   if (updateError) {
                     toast({ title: 'Failed to update cover', description: updateError.message, variant: 'destructive' });
                     return;
