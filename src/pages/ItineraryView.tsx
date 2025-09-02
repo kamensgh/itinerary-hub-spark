@@ -152,7 +152,8 @@ const CreateItineraryView = () => {
       const itinerary = {
         ...itineraryData,
         status: itineraryData.status as 'planning' | 'active' | 'completed',
-        participants: participants || []
+        participants: participants || [],
+        meetingPoint: (itineraryData as any).meetingpoint || { name: '', link: '' }
       };
 
       setExistingItinerary(itinerary);
