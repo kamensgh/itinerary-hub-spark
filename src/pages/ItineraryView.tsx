@@ -42,6 +42,7 @@ import { useActivities } from "@/hooks/useActivities";
 import { useItineraries, CreateItineraryData } from "@/hooks/useItineraries";
 import { ActivityForm } from "@/components/ActivityForm";
 import { ActivityCard } from "@/components/ActivityCard";
+import { DraggableActivityList } from "@/components/DraggableActivityList";
 import type { Itinerary } from "@/hooks/useItineraries";
 import type { Activity, CreateActivityData } from "@/hooks/useActivities";
 import { toSentenceCase } from "@/lib/sentenceCase";
@@ -86,6 +87,7 @@ const CreateItineraryView = () => {
     updateActivity,
     deleteActivity,
     uploadActivityImage,
+    reorderActivities,
     getActivitiesForLocation,
   } = useActivities(existingItinerary?.id || '');
 
@@ -860,26 +862,12 @@ const CreateItineraryView = () => {
                     </CardHeader>
                     
                     <CardContent>
-                      {locationActivities.length > 0 ? (
-                        <div className="space-y-4">
-                          {locationActivities.map((activity) => (
-                            <ActivityCard
-                              key={activity.id}
-                              activity={activity}
-                              onEdit={handleEditActivity}
-                              onDelete={handleActivityDelete}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-6 bg-muted/30 rounded-lg text-center">
-                          <Clock className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
-                          <p className="text-muted-foreground mb-2">No activities added yet</p>
-                          <p className="text-sm text-muted-foreground">
-                            Click "Add Activity" to start planning activities for this destination
-                          </p>
-                        </div>
-                      )}
+                      <DraggableActivityList
+                        activities={locationActivities}
+                        onReorder={(reorderedActivities) => reorderActivities(locationIndex, reorderedActivities)}
+                        onEdit={handleEditActivity}
+                        onDelete={handleActivityDelete}
+                      />
                     </CardContent>
                   </Card>
                 );

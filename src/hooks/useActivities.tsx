@@ -19,6 +19,7 @@ export interface Activity {
   price_range?: string;
   notes?: string;
   image_url?: string;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,7 @@ export const useActivities = (itineraryId: string) => {
         .select('*')
         .eq('itinerary_id', itineraryId)
         .order('location_index', { ascending: true })
+        .order('sort_order', { ascending: true })
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
 
@@ -83,11 +85,23 @@ export const useActivities = (itineraryId: string) => {
     if (!user || !itineraryId) return;
 
     try {
+      // Get the highest sort_order for this location
+      const { data: maxOrderData } = await supabase
+        .from('activities')
+        .select('sort_order')
+        .eq('itinerary_id', itineraryId)
+        .eq('location_index', locationIndex)
+        .order('sort_order', { ascending: false })
+        .limit(1);
+
+      const nextSortOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].sort_order + 1 : 0;
+
       const { data: newActivity, error } = await supabase
         .from('activities')
         .insert([{
           itinerary_id: itineraryId,
           location_index: locationIndex,
+          sort_order: nextSortOrder,
           ...data,
         }])
         .select()
@@ -239,6 +253,54 @@ export const useActivities = (itineraryId: string) => {
     fetchActivities();
   }, [user, itineraryId]);
 
+  const reorderActivities = async (locationIndex: number, reorderedActivities: Activity[]) => {
+    if (!user) return;
+
+    try {
+      // Update sort_order for all activities in this location using individual updates
+      const updatePromises = reorderedActivities.map((activity, index) => 
+        supabase
+          .from('activities')
+          .update({ sort_order: index })
+          .eq('id', activity.id)
+      );
+
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(result => result.error);
+
+      if (errors.length > 0) {
+        console.error('Error reordering activities:', errors);
+        toast({
+          title: "Error",
+          description: "Failed to reorder activities",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setActivities(prev => 
+        prev.map(activity => {
+          const newIndex = reorderedActivities.findIndex(a => a.id === activity.id);
+          return newIndex >= 0 ? { ...activity, sort_order: newIndex } : activity;
+        })
+      );
+
+      toast({
+        title: "Success",
+        description: "Activities reordered successfully",
+      });
+
+    } catch (error) {
+      console.error('Error reordering activities:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder activities",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getActivitiesForLocation = (locationIndex: number) => {
     return activities.filter(activity => activity.location_index === locationIndex);
   };
@@ -251,6 +313,7 @@ export const useActivities = (itineraryId: string) => {
     updateActivity,
     deleteActivity,
     uploadActivityImage,
+    reorderActivities,
     getActivitiesForLocation,
   };
 };

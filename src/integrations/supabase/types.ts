@@ -30,6 +30,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           price_range: string | null
+          sort_order: number | null
           start_time: string | null
           updated_at: string
           website_url: string | null
@@ -49,6 +50,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           price_range?: string | null
+          sort_order?: number | null
           start_time?: string | null
           updated_at?: string
           website_url?: string | null
@@ -68,6 +70,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           price_range?: string | null
+          sort_order?: number | null
           start_time?: string | null
           updated_at?: string
           website_url?: string | null
