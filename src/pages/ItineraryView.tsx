@@ -411,17 +411,6 @@ const CreateItineraryView = () => {
               </Button>
             </Link>
             <div className="flex gap-2">
-              {activeView !== 'form' && (
-                <Button
-                  onClick={() => setActiveView('form')}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -556,10 +545,10 @@ const CreateItineraryView = () => {
                     {new Date(endDate).toLocaleDateString()}
                   </div>
                 )}
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   {existingItinerary?.participants?.length || 0} participants
-                </div>
+                </div> */}
                 <Badge variant="outline" className="text-white border-white/50">
                   {activeView === 'form'
                     ? 'Editing'
@@ -576,7 +565,7 @@ const CreateItineraryView = () => {
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-2">
             <TabsTrigger value="form" className="flex items-center gap-2">
               <Edit3 className="h-4 w-4" />
               Form
