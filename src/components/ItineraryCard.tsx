@@ -59,7 +59,16 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
 
   return (
     <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group">
-      <div className={`h-32 bg-${itinerary.image} rounded-t-lg relative`}>
+      <div 
+        className="h-32 rounded-t-lg relative overflow-hidden"
+        style={{
+          background: itinerary.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-')
+            ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
+            : itinerary.image?.startsWith('gradient-') 
+            ? "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)"
+            : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
+        }}
+      >
         <div className="absolute top-4 left-4">
           <Badge className={`${getStatusColor(itinerary.status)} text-white`}>
             {getStatusText(itinerary.status)}
