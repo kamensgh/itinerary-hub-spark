@@ -30,8 +30,10 @@ import {
   Eye,
   Trash2,
   Image,
-  X
+  X,
+  ChevronDown
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -368,10 +370,12 @@ const CreateItineraryView = () => {
     <div className="min-h-screen bg-gradient-sky">
       {/* Header */}
       <div
-        className="text-white"
+        className="text-white relative overflow-hidden"
         style={{
-          background: image && image !== 'gradient-sky'
-            ? `linear-gradient(90deg, #38bdf8 0%, #6366f1 100%), url('${image}') center/cover no-repeat`
+          background: image && image !== 'gradient-sky' && !image.startsWith('gradient-')
+            ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${image}') center/cover no-repeat`
+            : image?.startsWith('gradient-') 
+            ? "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)"
             : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
         }}
       >
@@ -424,7 +428,7 @@ const CreateItineraryView = () => {
                 accept="image/*"
                 ref={coverInputRef}
                 style={{ display: 'none' }}
-                  onChange={async (e) => {
+                onChange={async (e) => {
                     try {
                       if (!e.target.files || !existingItinerary || !user) return;
                       const file = e.target.files[0];
@@ -464,15 +468,40 @@ const CreateItineraryView = () => {
                     }
                   }}
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={() => coverInputRef.current?.click()}
-              >
-                <Image className="h-4 w-4 mr-2" />
-                Update Cover
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/20"
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Cover
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-card border border-border">
+                  <DropdownMenuItem onClick={() => coverInputRef.current?.click()}>
+                    <Image className="h-4 w-4 mr-2" />
+                    Update Cover
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      if (!existingItinerary) return;
+                      try {
+                        await updateItinerary(existingItinerary.id, { image: 'gradient-sky' });
+                        setImage('gradient-sky');
+                        toast({ title: 'Cover removed!' });
+                      } catch (err: any) {
+                        toast({ title: 'Failed to remove cover', description: err?.message, variant: 'destructive' });
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove Cover
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
