@@ -424,39 +424,45 @@ const CreateItineraryView = () => {
                 accept="image/*"
                 ref={coverInputRef}
                 style={{ display: 'none' }}
-                onChange={async (e) => {
-                  if (!e.target.files || !existingItinerary) return;
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  const fileExt = file.name.split('.').pop();
-                  const fileName = `cover_${existingItinerary.id}.${fileExt}`;
-                  // Remove existing file if present (Supabase Storage upsert is not always reliable for overwrites)
-                  await supabase.storage.from('itinerary-covers').remove([fileName]);
-                  // Upload to Supabase Storage
-                  const { error: uploadError } = await supabase.storage
-                    .from('itinerary-covers')
-                    .upload(fileName, file);
-                  if (uploadError) {
-                    toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
-                    return;
-                  }
-                  const { data: urlData } = supabase.storage.from('itinerary-covers').getPublicUrl(fileName);
-                  if (!urlData?.publicUrl) {
-                    toast({ title: 'Failed to get image URL', variant: 'destructive' });
-                    return;
-                  }
-                  const updateError = await updateItinerary(existingItinerary.id, { 
-                    image: urlData.publicUrl 
-                  })
-                    .then(() => null)
-                    .catch((error) => error);
-                  if (updateError) {
-                    toast({ title: 'Failed to update cover', description: updateError.message, variant: 'destructive' });
-                    return;
-                  }
-                  setImage(urlData.publicUrl);
-                  toast({ title: 'Cover updated!' });
-                }}
+                  onChange={async (e) => {
+                    try {
+                      if (!e.target.files || !existingItinerary || !user) return;
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const fileExt = file.name.split('.').pop() || 'png';
+                      const filePath = `${user.id}/cover_${existingItinerary.id}.${fileExt}`;
+
+                      const { error: uploadError } = await supabase.storage
+                        .from('itinerary-covers')
+                        .upload(filePath, file, {
+                          upsert: true,
+                          contentType: file.type,
+                          cacheControl: '3600',
+                        });
+
+                      if (uploadError) {
+                        toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
+                        return;
+                      }
+
+                      const { data: urlData } = supabase.storage
+                        .from('itinerary-covers')
+                        .getPublicUrl(filePath);
+
+                      if (!urlData?.publicUrl) {
+                        toast({ title: 'Failed to get image URL', variant: 'destructive' });
+                        return;
+                      }
+
+                      await updateItinerary(existingItinerary.id, { image: urlData.publicUrl });
+                      setImage(urlData.publicUrl);
+                      toast({ title: 'Cover updated!' });
+                    } catch (err: any) {
+                      toast({ title: 'Cover update failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+                    } finally {
+                      if (coverInputRef.current) coverInputRef.current.value = '';
+                    }
+                  }}
               />
               <Button
                 variant="ghost"
