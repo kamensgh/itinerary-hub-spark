@@ -96,10 +96,12 @@ const ItineraryViewOnly = () => {
   return (
     <div className="min-h-screen bg-gradient-sky">
       <div
-        className="text-white py-8"
+        className="text-white py-8 relative overflow-hidden"
         style={{
-          background: itinerary?.image
-            ? `linear-gradient(90deg, #38bdf8 0%, #6366f1 100%), url('${itinerary.image}') center/cover no-repeat`
+          background: itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-')
+            ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
+            : itinerary?.image?.startsWith('gradient-') 
+            ? "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)"
             : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
         }}
       >
