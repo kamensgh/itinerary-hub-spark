@@ -54,6 +54,7 @@ import { useItineraries, CreateItineraryData } from '@/hooks/useItineraries';
 import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
+import { DraggableLocationList } from '@/components/DraggableLocationList';
 import type { Itinerary } from '@/hooks/useItineraries';
 import type { Activity, CreateActivityData } from '@/hooks/useActivities';
 import { toSentenceCase } from '@/lib/sentenceCase';
@@ -103,6 +104,7 @@ const CreateItineraryView = () => {
     uploadActivityImage,
     reorderActivities,
     getActivitiesForLocation,
+    fetchActivities,
   } = useActivities(existingItinerary?.id || '');
 
   // Initialize form data
@@ -386,6 +388,67 @@ const CreateItineraryView = () => {
 
   const handleActivityDelete = async (activityId: string) => {
     await deleteActivity(activityId);
+  };
+
+  const handleLocationReorder = async (reorderedLocations: string[]) => {
+    if (!existingItinerary) return;
+
+    try {
+      // Update the itinerary with new location order
+      await updateItinerary(existingItinerary.id, {
+        locations: reorderedLocations
+      });
+
+      // Update activities' location_index based on the new location order
+      const locationIndexMap: { [key: number]: number } = {};
+      
+      // Create mapping from old index to new index
+      existingItinerary.locations.forEach((location, oldIndex) => {
+        const newIndex = reorderedLocations.indexOf(location);
+        if (newIndex !== -1) {
+          locationIndexMap[oldIndex] = newIndex;
+        }
+      });
+
+      // Update all activities with new location_index
+      const updatePromises = activities
+        .filter(activity => locationIndexMap.hasOwnProperty(activity.location_index))
+        .map(activity => 
+          supabase
+            .from('activities')
+            .update({ location_index: locationIndexMap[activity.location_index] })
+            .eq('id', activity.id)
+        );
+
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(result => result.error);
+
+      if (errors.length > 0) {
+        console.error('Error updating activity locations:', errors);
+        toast({
+          title: "Error",
+          description: "Failed to update activity locations",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Refresh activities to get updated data
+      await fetchActivities();
+
+      toast({
+        title: "Success",
+        description: "Locations reordered successfully",
+      });
+
+    } catch (error) {
+      console.error('Error reordering locations:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder locations",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -873,49 +936,15 @@ const CreateItineraryView = () => {
           {/* Activities Tab */}
           <TabsContent value="timeline" className="space-y-6">
             {existingItinerary?.locations && existingItinerary.locations.length > 0 ? (
-              existingItinerary.locations.map((location, locationIndex) => {
-                const locationActivities = getActivitiesForLocation(locationIndex);
-
-                return (
-                  <Card key={locationIndex} className="border-2">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                            {locationIndex + 1}
-                          </div>
-                          <div>
-                            <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
-                            <CardDescription className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              Destination • {locationActivities.length} activities
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handleAddActivity(locationIndex)}
-                          size="sm"
-                          className="shrink-0"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Activity
-                        </Button>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent>
-                      <DraggableActivityList
-                        activities={locationActivities}
-                        onReorder={(reorderedActivities) =>
-                          reorderActivities(locationIndex, reorderedActivities)
-                        }
-                        onEdit={handleEditActivity}
-                        onDelete={handleActivityDelete}
-                      />
-                    </CardContent>
-                  </Card>
-                );
-              })
+              <DraggableLocationList
+                locations={existingItinerary.locations}
+                onReorder={handleLocationReorder}
+                getActivitiesForLocation={getActivitiesForLocation}
+                onAddActivity={handleAddActivity}
+                onReorderActivities={reorderActivities}
+                onEditActivity={handleEditActivity}
+                onDeleteActivity={handleActivityDelete}
+              />
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">
