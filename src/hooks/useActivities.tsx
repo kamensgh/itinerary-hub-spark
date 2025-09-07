@@ -291,6 +291,9 @@ export const useActivities = (itineraryId: string) => {
         description: "Activities reordered successfully",
       });
 
+      // Fetch the latest activities to ensure we have the most up-to-date positions
+      await fetchActivities();
+
     } catch (error) {
       console.error('Error reordering activities:', error);
       toast({
