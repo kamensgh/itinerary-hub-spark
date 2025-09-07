@@ -1,28 +1,24 @@
-import { useEffect, useState } from "react";
-import { toSentenceCase } from "@/lib/sentenceCase";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Plus, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Share2, 
-  Search,
-  Filter,
-  Plane,
-  LogOut
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useItineraries, Itinerary } from "@/hooks/useItineraries";
-import ItineraryForm from "@/components/ItineraryForm";
-import ItineraryCard from "@/components/ItineraryCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import { useEffect, useState } from 'react';
+import { toSentenceCase } from '@/lib/sentenceCase';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Calendar, MapPin, Users, Share2, Search, Filter, Plane, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useItineraries, Itinerary } from '@/hooks/useItineraries';
+import ItineraryForm from '@/components/ItineraryForm';
+import ItineraryCard from '@/components/ItineraryCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -31,17 +27,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { 
-    itineraries, 
-    loading: itinerariesLoading, 
-    createItinerary, 
-    updateItinerary, 
-    deleteItinerary 
+  const {
+    itineraries,
+    loading: itinerariesLoading,
+    createItinerary,
+    updateItinerary,
+    deleteItinerary,
   } = useItineraries();
 
   // Form and filter states
@@ -49,7 +45,7 @@ const Dashboard = () => {
   const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itineraryToDelete, setItineraryToDelete] = useState<string | null>(null);
-  
+
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -57,7 +53,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate("/auth");
+      navigate('/auth');
     }
   }, [user, loading, navigate]);
 
@@ -78,24 +74,27 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    navigate('/');
   };
 
   // Filter and search logic
-  const filteredItineraries = itineraries.filter(itinerary => {
-    const matchesSearch = toSentenceCase(itinerary.title).toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         toSentenceCase(itinerary.description)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         itinerary.locations.some(location => location.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+  const filteredItineraries = itineraries.filter((itinerary) => {
+    const matchesSearch =
+      toSentenceCase(itinerary.title).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      toSentenceCase(itinerary.description)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      itinerary.locations.some((location) =>
+        location.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+
     const matchesStatus = statusFilter === 'all' || itinerary.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
   // Stats calculations
   const stats = {
-    active: itineraries.filter(i => i.status === 'active').length,
-    planning: itineraries.filter(i => i.status === 'planning').length,
+    active: itineraries.filter((i) => i.status === 'active').length,
+    planning: itineraries.filter((i) => i.status === 'planning').length,
     totalParticipants: itineraries.reduce((acc, i) => acc + (i.participants?.length || 0), 0),
     totalTrips: itineraries.length,
   };
@@ -152,19 +151,27 @@ const Dashboard = () => {
               <h1 className="text-3xl md:text-4xl font-bold">My Itineraries</h1>
             </div>
             <div className="flex items-center gap-3">
-            <Button onClick={() => navigate('/itinerary/new')} className="bg-white text-primary hover:bg-white/90">
-              <Plus className="h-4 w-4 mr-2" />
-              New Trip
-            </Button>
-              <Button variant="ghost" onClick={handleSignOut} className="text-white hover:bg-white/20">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+              <Button
+                onClick={() => navigate('/itinerary/new')}
+                className="bg-white text-primary hover:bg-white/90"
+              >
+                <Plus className="h-4 w-4 mr-0 md:mr-2" />
+                <span className="hidden md:block">New Trip</span>
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleSignOut}
+                className="text-white hover:bg-white/20"
+              >
+                <LogOut className="h-4 w-4 mr-0 md:mr-2" />
+                <span className="hidden md:block">Sign Out</span>
               </Button>
             </div>
           </div>
 
           <p className="text-lg opacity-90">
-            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! Plan your next adventure or continue working on existing trips.
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! Plan your next
+            adventure or continue working on existing trips.
           </p>
         </div>
       </div>
@@ -182,8 +189,8 @@ const Dashboard = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex items-center gap-2"
             onClick={() => setShowFilters(!showFilters)}
           >
@@ -211,8 +218,8 @@ const Dashboard = () => {
                 </Select>
               </div>
               <div className="flex items-end">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setSearchTerm('');
                     setStatusFilter('all');
@@ -227,7 +234,7 @@ const Dashboard = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="hover:shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-travel-blue rounded-lg flex items-center justify-center mr-3">
@@ -235,13 +242,15 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.active}</p>
-                  <p className="text-xs text-muted-foreground">Active Trip{stats.active !== 1 ? 's' : ''}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Active Trip{stats.active !== 1 ? 's' : ''}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-travel-orange rounded-lg flex items-center justify-center mr-3">
@@ -255,7 +264,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-travel-green rounded-lg flex items-center justify-center mr-3">
@@ -269,7 +278,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-travel-purple rounded-lg flex items-center justify-center mr-3">
@@ -291,12 +300,11 @@ const Dashboard = () => {
               <Plane className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No trips found</h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? "Try adjusting your search or filters" 
-                  : "Start planning your first adventure!"
-                }
+                {searchTerm || statusFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
+                  : 'Start planning your first adventure!'}
               </p>
-              {(!searchTerm && statusFilter === 'all') && (
+              {!searchTerm && statusFilter === 'all' && (
                 <Button onClick={() => navigate('/itinerary/new')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Trip
@@ -305,8 +313,8 @@ const Dashboard = () => {
             </div>
           ) : (
             filteredItineraries.map((itinerary) => (
-              <ItineraryCard 
-                key={itinerary.id} 
+              <ItineraryCard
+                key={itinerary.id}
                 itinerary={itinerary}
                 onEdit={openEditDialog}
                 onDelete={openDeleteDialog}
@@ -316,19 +324,21 @@ const Dashboard = () => {
 
           {/* Add New Card - only show if we have trips or no filters */}
           {(filteredItineraries.length > 0 || (!searchTerm && statusFilter === 'all')) && (
-            <Card 
-              className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
+            <Card
+              className="border border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
               onClick={() => navigate('/itinerary/new')}
             >
-              <CardContent className="flex flex-col items-center justify-center h-80 text-center">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
-                  <Plus className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Create New Trip</h3>
-                <p className="text-sm text-muted-foreground">
-                  Start planning your next adventure
-                </p>
-              </CardContent>
+              <div className="h-full flex items-center justify-center">
+                <CardContent className="flex flex-col items-center justify-center text-center gap-0">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                    <Plus className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Create New Trip</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Start planning your next adventure
+                  </p>
+                </CardContent>
+              </div>
             </Card>
           )}
         </div>
@@ -359,7 +369,10 @@ const Dashboard = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

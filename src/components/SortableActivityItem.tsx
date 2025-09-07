@@ -33,9 +33,9 @@ export function SortableItem({ activity, onEdit, onDelete }: SortableItemProps) 
       ref={setNodeRef}
       style={style}
       className={`relative group transition-all duration-200 ${
-        isDragging 
-          ? 'opacity-75 shadow-2xl scale-105 z-50 bg-background border border-primary/20 rounded-lg' 
-          : 'hover:shadow-md'
+        isDragging
+          ? 'opacity-75 z-50 bg-background rounded-lg'
+          : ''
       }`}
     >
       <div className="flex items-center gap-3">
@@ -49,12 +49,8 @@ export function SortableItem({ activity, onEdit, onDelete }: SortableItemProps) 
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        <div className="flex-1 min-w-0">
-          <ActivityCard
-            activity={activity}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+        <div className="flex-1 min-w-0 rounded-lg overflow-hidden shadow-sm border">
+          <ActivityCard activity={activity} onEdit={onEdit} onDelete={onDelete} />
         </div>
       </div>
     </div>

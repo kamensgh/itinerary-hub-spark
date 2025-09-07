@@ -24,19 +24,27 @@ interface ItineraryCardProps {
 const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDelete }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "bg-travel-green";
-      case "planning": return "bg-travel-orange";
-      case "completed": return "bg-muted";
-      default: return "bg-muted";
+      case 'active':
+        return 'bg-travel-green';
+      case 'planning':
+        return 'bg-travel-orange';
+      case 'completed':
+        return 'bg-muted';
+      default:
+        return 'bg-muted';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "active": return "In Progress";
-      case "planning": return "Planning";
-      case "completed": return "Completed";
-      default: return status;
+      case 'active':
+        return 'In Progress';
+      case 'planning':
+        return 'Planning';
+      case 'completed':
+        return 'Completed';
+      default:
+        return status;
     }
   };
 
@@ -44,7 +52,7 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -58,15 +66,18 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
   };
 
   return (
-    <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group">
-      <div 
+    <Card className="hover:shadow-lg transition-all cursor-pointer group">
+      <div
         className="h-32 rounded-t-lg relative overflow-hidden"
         style={{
-          background: itinerary.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-')
-            ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
-            : itinerary.image?.startsWith('gradient-') 
-            ? "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)"
-            : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
+          background:
+            itinerary.image &&
+            itinerary.image !== 'gradient-sky' &&
+            !itinerary.image.startsWith('gradient-')
+              ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
+              : itinerary.image?.startsWith('gradient-')
+              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
+              : 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
         }}
       >
         <div className="absolute top-4 left-4">
@@ -74,10 +85,14 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
             {getStatusText(itinerary.status)}
           </Badge>
         </div>
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -86,7 +101,7 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => onDelete(itinerary.id)}
                 className="text-destructive focus:text-destructive"
               >
@@ -97,69 +112,70 @@ const ItineraryCard: React.FC<ItineraryCardProps> = ({ itinerary, onEdit, onDele
           </DropdownMenu>
         </div>
       </div>
-      
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg mb-1">{toSentenceCase(itinerary.title)}</CardTitle>
-            <CardDescription className="text-sm">
-              {toSentenceCase(itinerary.description)}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
-        {(itinerary.start_date || itinerary.end_date) && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>
-              {itinerary.start_date && formatDate(itinerary.start_date)}
-              {itinerary.start_date && itinerary.end_date && ' - '}
-              {itinerary.end_date && formatDate(itinerary.end_date)}
-            </span>
+      <div>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-0">{toSentenceCase(itinerary.title)}</CardTitle>
+            </div>
           </div>
-        )}
+        </CardHeader>
 
-        {itinerary.locations && itinerary.locations.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span>{itinerary.locations.slice(0, 2).join(", ")}
-              {itinerary.locations.length > 2 && ` +${itinerary.locations.length - 2} more`}
-            </span>
-          </div>
-        )}
+        <div className="px-6 pb-6">
+          {(itinerary.start_date || itinerary.end_date) && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>
+                {itinerary.start_date && formatDate(itinerary.start_date)}
+                {itinerary.start_date && itinerary.end_date && ' - '}
+                {itinerary.end_date && formatDate(itinerary.end_date)}
+              </span>
+            </div>
+          )}
 
-        <div className="flex items-center justify-between">
-          <div className="flex -space-x-2">
-            {itinerary.participants?.slice(0, 3).map((participant) => (
-              <Avatar key={participant.id} className="border-2 border-white w-8 h-8">
-                <AvatarFallback className="text-xs">
-                  {participant.initials}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-            {itinerary.participants && itinerary.participants.length > 3 && (
-              <div className="w-8 h-8 rounded-full bg-muted border-2 border-white flex items-center justify-center">
-                <span className="text-xs text-muted-foreground">
-                  +{itinerary.participants.length - 3}
-                </span>
-              </div>
-            )}
-          </div>
+          {itinerary.locations && itinerary.locations.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
+              <MapPin className="h-4 w-4" />
+              <span>
+                {itinerary.locations
+                  .slice(0, 2)
+                  .map((loc) => toSentenceCase(loc))
+                  .join(', ')}
+                {itinerary.locations.length > 2 && ` +${itinerary.locations.length - 2} more`}
+              </span>
+            </div>
+          )}
 
-          <div className="flex gap-2">
-            <Button size="sm" variant="ghost" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Link to={`/itinerary/${itinerary.id}`}>
-              <Button size="sm" className="bg-travel-blue hover:bg-travel-blue/90">
-                View
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex -space-x-2">
+              {itinerary.participants?.slice(0, 3).map((participant) => (
+                <Avatar key={participant.id} className="border-2 border-white w-8 h-8">
+                  <AvatarFallback className="text-xs">{participant.initials}</AvatarFallback>
+                </Avatar>
+              ))}
+              {itinerary.participants && itinerary.participants.length > 3 && (
+                <div className="w-8 h-8 rounded-full bg-muted border-2 border-white flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground">
+                    +{itinerary.participants.length - 3}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" onClick={handleShare}>
+                <Share2 className="h-4 w-4" />
               </Button>
-            </Link>
+              <Link to={`/itinerary/${itinerary.id}`}>
+                <Button size="sm" className="bg-travel-blue hover:bg-travel-blue/90">
+                  View
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };

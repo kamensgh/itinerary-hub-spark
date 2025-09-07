@@ -74,7 +74,7 @@ export function DraggableActivityList({
         items={activities.map(a => a.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-3">
+        <div className="space-y-5">
           {activities.map((activity, index) => (
             <div key={activity.id} className="relative">
               <SortableItem
