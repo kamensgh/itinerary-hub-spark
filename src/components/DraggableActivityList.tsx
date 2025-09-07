@@ -41,12 +41,14 @@ export function DraggableActivityList({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
+    if (active.id !== over?.id && over) {
       const oldIndex = activities.findIndex((item) => item.id === active.id);
-      const newIndex = activities.findIndex((item) => item.id === over?.id);
+      const newIndex = activities.findIndex((item) => item.id === over.id);
 
-      const reorderedActivities = arrayMove(activities, oldIndex, newIndex);
-      onReorder(reorderedActivities);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reorderedActivities = arrayMove(activities, oldIndex, newIndex);
+        onReorder(reorderedActivities);
+      }
     }
   }
 
@@ -72,14 +74,15 @@ export function DraggableActivityList({
         items={activities.map(a => a.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-4">
-          {activities.map((activity) => (
-            <SortableItem
-              key={activity.id}
-              activity={activity}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+        <div className="space-y-3">
+          {activities.map((activity, index) => (
+            <div key={activity.id} className="relative">
+              <SortableItem
+                activity={activity}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            </div>
           ))}
         </div>
       </SortableContext>

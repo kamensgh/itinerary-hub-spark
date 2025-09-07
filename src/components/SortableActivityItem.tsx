@@ -32,18 +32,24 @@ export function SortableItem({ activity, onEdit, onDelete }: SortableItemProps) 
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group ${isDragging ? 'opacity-50 z-50' : ''}`}
+      className={`relative group transition-all duration-200 ${
+        isDragging 
+          ? 'opacity-75 shadow-2xl scale-105 z-50 bg-background border border-primary/20 rounded-lg' 
+          : 'hover:shadow-md'
+      }`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <button
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className={`flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-all duration-200 cursor-grab active:cursor-grabbing ${
+            isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
           aria-label="Drag to reorder"
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <ActivityCard
             activity={activity}
             onEdit={onEdit}
