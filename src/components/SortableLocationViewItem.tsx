@@ -39,8 +39,7 @@ export const SortableLocationViewItem: React.FC<SortableLocationViewItemProps> =
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging ? 'none' : transition,
   };
 
   return (

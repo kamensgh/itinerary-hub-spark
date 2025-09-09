@@ -25,26 +25,20 @@ export function SortableItem({ activity, onEdit, onDelete }: SortableItemProps) 
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group transition-all duration-200 ${
-        isDragging
-          ? 'opacity-75 z-50 bg-background rounded-lg'
-          : ''
-      }`}
+      className="relative group transition-all duration-200"
     >
       <div className="flex items-center gap-3">
         <button
           {...attributes}
           {...listeners}
-          className={`flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-all duration-200 cursor-grab active:cursor-grabbing ${
-            isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
+          className="flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-all duration-200 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
           aria-label="Drag to reorder"
         >
           <GripVertical className="h-4 w-4" />
