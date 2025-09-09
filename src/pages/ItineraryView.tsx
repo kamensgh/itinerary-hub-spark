@@ -54,6 +54,7 @@ import { useItineraries, CreateItineraryData } from '@/hooks/useItineraries';
 import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
+import { DraggableLocationView } from '@/components/DraggableLocationView';
 import type { Itinerary } from '@/hooks/useItineraries';
 import type { Activity, CreateActivityData } from '@/hooks/useActivities';
 import { toSentenceCase } from '@/lib/sentenceCase';
@@ -69,7 +70,7 @@ const CreateItineraryView = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { createItinerary, updateItinerary } = useItineraries();
+  const { createItinerary, updateItinerary, updateLocationOrder } = useItineraries();
 
   // Form states
   const [title, setTitle] = useState('');
@@ -220,6 +221,19 @@ const CreateItineraryView = () => {
 
   const removeLocation = (id: string) => {
     setLocations(locations.filter((loc) => loc.id !== id));
+  };
+
+  const handleLocationsReorder = async (reorderedLocations: LocationData[]) => {
+    setLocations(reorderedLocations);
+    
+    if (existingItinerary) {
+      try {
+        const locationNames = reorderedLocations.map(loc => loc.name).filter(Boolean);
+        await updateLocationOrder(existingItinerary.id, locationNames);
+      } catch (error) {
+        console.error('Error updating location order:', error);
+      }
+    }
   };
 
   if (loading) {
@@ -715,43 +729,13 @@ const CreateItineraryView = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {locations.map((location, index) => (
-                    <div key={location.id} className="flex items-start gap-3 p-4 border rounded-lg">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm mt-1">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 space-y-3">
-                        <Input
-                          placeholder="Location name"
-                          value={location.name}
-                          onChange={(e) => updateLocation(location.id, 'name', e.target.value)}
-                        />
-                        <Input
-                          placeholder="Address (optional)"
-                          value={location.address}
-                          onChange={(e) => updateLocation(location.id, 'address', e.target.value)}
-                        />
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeLocation(location.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-
-                  {locations.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No destinations added yet</p>
-                      <p className="text-sm">Click "Add Location" to get started</p>
-                    </div>
-                  )}
-                </div>
+                <DraggableLocationView
+                  locations={locations}
+                  onLocationsChange={handleLocationsReorder}
+                  onUpdateLocation={updateLocation}
+                  onRemoveLocation={removeLocation}
+                  onAddLocation={addLocation}
+                />
               </CardContent>
             </Card>
 
