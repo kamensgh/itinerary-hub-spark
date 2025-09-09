@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { CreateItineraryData } from '@/hooks/useItineraries';
+import { DraggableLocationForm } from './DraggableLocationForm';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -16,7 +17,7 @@ const formSchema = z.object({
   status: z.enum(['planning', 'active', 'completed']).default('planning'),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
-  locations: z.string().optional(),
+  locations: z.array(z.string()).default([]),
   image: z.string().default('gradient-sky'),
   meetingPoint: z.object({
     name: z.string().optional(),
@@ -49,7 +50,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
       status: 'planning',
       start_date: '',
       end_date: '',
-      locations: '',
+      locations: [],
       image: 'gradient-sky',
       meetingPoint: { name:'', link:'' }
     },
@@ -64,7 +65,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         status: initialData.status || 'planning',
         start_date: initialData.start_date || '',
         end_date: initialData.end_date || '',
-        locations: initialData.locations?.join(', ') || '',
+        locations: initialData.locations || [],
         image: initialData.image || 'gradient-sky',
         meetingPoint: initialData.meetingPoint || { name:'', link:'' }
       });
@@ -76,7 +77,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         status: 'planning',
         start_date: '',
         end_date: '',
-        locations: '',
+        locations: [],
         image: 'gradient-sky',
         meetingPoint: { name:'', link:'' }
       });
@@ -90,7 +91,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         description: data.description,
         status: data.status,
         image: data.image,
-        locations: data.locations ? data.locations.split(',').map(loc => loc.trim()).filter(Boolean) : [],
+        locations: data.locations.filter(Boolean),
         start_date: data.start_date || undefined,
         end_date: data.end_date || undefined,
         meetingPoint: data.meetingPoint && (data.meetingPoint.name || data.meetingPoint.link) ? {
@@ -184,9 +185,12 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
               name="locations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Locations</FormLabel>
+                  <FormLabel>Destinations</FormLabel>
                   <FormControl>
-                    <Input placeholder="Tokyo, Kyoto, Osaka" {...field} />
+                    <DraggableLocationForm
+                      locations={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

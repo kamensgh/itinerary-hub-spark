@@ -260,6 +260,52 @@ export const useItineraries = () => {
     }
   };
 
+  const updateLocationOrder = async (itineraryId: string, newLocations: string[]) => {
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      // First update the itinerary's location array
+      await updateItinerary(itineraryId, { locations: newLocations });
+
+      // Then update all activities' location_index to match the new order
+      const { data: activities, error: activitiesError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('itinerary_id', itineraryId);
+
+      if (activitiesError) throw activitiesError;
+
+      if (activities && activities.length > 0) {
+        const updates = activities.map(activity => {
+          // Find the new index for this activity's location
+          const currentLocation = newLocations[activity.location_index];
+          const newLocationIndex = newLocations.indexOf(currentLocation);
+          
+          return supabase
+            .from('activities')
+            .update({ location_index: newLocationIndex >= 0 ? newLocationIndex : activity.location_index })
+            .eq('id', activity.id);
+        });
+
+        await Promise.all(updates);
+      }
+
+      toast({
+        title: "Success",
+        description: "Locations reordered successfully",
+      });
+
+    } catch (error) {
+      console.error('Error updating location order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update location order",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchItineraries();
   }, [user]);
@@ -272,6 +318,7 @@ export const useItineraries = () => {
     deleteItinerary,
     addParticipant,
     removeParticipant,
+    updateLocationOrder,
     refreshItineraries: fetchItineraries,
   };
 };
