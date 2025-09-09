@@ -149,6 +149,14 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
                 <CardTitle className="text-lg leading-tight">
                   {toSentenceCase(activity.name)}
                 </CardTitle>
+                <div>
+                  {/* Description */}
+                  {activity.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {toSentenceCase(activity.description)}
+                    </p>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline" className="text-xs">
                     {activity.activity_type.replace('_', ' ')}
@@ -206,14 +214,7 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
         </CardHeader>
 
         <CardContent className="flex justify-between md:flex-row flex-col">
-          <div>
-            {/* Description */}
-            {activity.description && (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {activity.description}
-              </p>
-            )}
-
+          <div className="shrink-0">
             {/* Time and Date */}
             {(activity.date || activity.start_time || activity.end_time) && (
               <div className="flex flex-wrap gap-4 text-sm">
@@ -272,11 +273,9 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
 
             {/* Notes */}
             {activity.notes && (
-              <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="underline cursor-pointer" onClick={() => setShowNoteModal(true)}>
-                  View Note
-                </p>
-              </div>
+              <p className="underline cursor-pointer" onClick={() => setShowNoteModal(true)}>
+                View Note
+              </p>
             )}
           </div>
 
@@ -287,7 +286,7 @@ export const ActivityCard = ({ activity, onEdit, onDelete, readOnly }: ActivityC
                 <img
                   src={activity.image_url}
                   alt={activity.name}
-                  className="md:w-1/4 w-full h-full object-cover"
+                  className="w-full h-32 object-cover"
                   onError={() => setImageError(true)}
                 />
               </div>
