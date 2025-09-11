@@ -85,6 +85,33 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          itinerary_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          itinerary_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          itinerary_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       itineraries: {
         Row: {
           created_at: string

@@ -38,6 +38,7 @@ import {
   Image,
   X,
   ChevronDown,
+  DollarSign,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { useActivities } from '@/hooks/useActivities';
 import { useItineraries, CreateItineraryData } from '@/hooks/useItineraries';
+import { useExpenses, CreateExpenseData } from '@/hooks/useExpenses';
 import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
@@ -106,6 +108,18 @@ const CreateItineraryView = () => {
     reorderActivities,
     getActivitiesForLocation,
   } = useActivities(existingItinerary?.id || '');
+
+  const {
+    expenses,
+    loading: expensesLoading,
+    createExpense,
+    deleteExpense,
+    getTotalCost,
+  } = useExpenses(existingItinerary?.id || '');
+
+  // Expense form state
+  const [expenseName, setExpenseName] = useState('');
+  const [expenseAmount, setExpenseAmount] = useState('');
 
   // Initialize form data
   useEffect(() => {
@@ -403,6 +417,42 @@ const CreateItineraryView = () => {
     await deleteActivity(activityId);
   };
 
+  const handleAddExpense = async () => {
+    if (!expenseName.trim() || !expenseAmount.trim()) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please enter both expense name and amount',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const amount = parseFloat(expenseAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: 'Invalid Amount',
+        description: 'Please enter a valid positive amount',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await createExpense({
+        name: expenseName.trim(),
+        amount: amount,
+      });
+      setExpenseName('');
+      setExpenseAmount('');
+    } catch (error) {
+      console.error('Error adding expense:', error);
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    await deleteExpense(expenseId);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-sky">
       {/* Header */}
@@ -600,7 +650,7 @@ const CreateItineraryView = () => {
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-2">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3">
             <TabsTrigger value="form" className="flex items-center gap-2">
               <Edit3 className="h-4 w-4" />
               Form
@@ -616,6 +666,14 @@ const CreateItineraryView = () => {
             >
               <List className="h-4 w-4" />
               Activities
+            </TabsTrigger>
+            <TabsTrigger
+              value="budget"
+              className="flex items-center gap-2"
+              disabled={!existingItinerary}
+            >
+              <DollarSign className="h-4 w-4" />
+              Budget
             </TabsTrigger>
             <TabsTrigger
               value="chat"
@@ -932,6 +990,88 @@ const CreateItineraryView = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Budget Tab */}
+          <TabsContent value="budget" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Trip Budget</CardTitle>
+                    <CardDescription>Track your trip expenses</CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">
+                      ${getTotalCost().toFixed(2)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Estimated Cost</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Add Expense Form */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Expense name (e.g., Flight tickets)"
+                    value={expenseName}
+                    onChange={(e) => setExpenseName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={expenseAmount}
+                    onChange={(e) => setExpenseAmount(e.target.value)}
+                    className="w-32"
+                    min="0"
+                    step="0.01"
+                  />
+                  <Button onClick={handleAddExpense} disabled={expensesLoading}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Expense
+                  </Button>
+                </div>
+
+                {/* Expenses List */}
+                <div className="space-y-2">
+                  {expenses.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No expenses added yet</p>
+                      <p className="text-sm mt-1">Start adding expenses to track your budget</p>
+                    </div>
+                  ) : (
+                    expenses.map((expense) => (
+                      <div
+                        key={expense.id}
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">{expense.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Added {new Date(expense.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-lg">
+                            ${expense.amount.toFixed(2)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Chat Tab */}
