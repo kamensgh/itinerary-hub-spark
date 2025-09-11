@@ -4,7 +4,7 @@ import { useActivities } from "@/hooks/useActivities";
 import { useEffect, useState } from "react";
 import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar, Share2 } from "lucide-react";
+import { MapPin, Calendar, Share2, CalendarPlus } from "lucide-react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -92,6 +92,24 @@ const ItineraryViewOnly = () => {
         description: "The link has been copied to your clipboard.",
       });
     }
+  };
+
+  const handleAddToCalendar = () => {
+    if (!itinerary || !itinerary.start_date) return;
+    
+    const title = encodeURIComponent(itinerary.title);
+    const description = encodeURIComponent(itinerary.description || '');
+    const startDate = new Date(itinerary.start_date);
+    const endDate = itinerary.end_date ? new Date(itinerary.end_date) : new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    
+    // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    };
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${description}&dates=${formatDate(startDate)}/${formatDate(endDate)}`;
+    
+    window.open(googleCalendarUrl, '_blank');
   };
 
   return (
@@ -192,7 +210,18 @@ const ItineraryViewOnly = () => {
             return (
               <Card className="mb-6 mx-auto">
                 <CardHeader>
-                  <CardTitle className="text-lg">Meeting Point</CardTitle>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    Meeting Point
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddToCalendar}
+                      className="flex items-center gap-2"
+                    >
+                      <CalendarPlus className="h-4 w-4" />
+                      Add to Calendar
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <div className="px-6 pb-6">
                   {meetingPoint.name && (
