@@ -561,6 +561,15 @@ const CreateItineraryView = () => {
                       const start = new Date(startDate);
                       const daysLeft = differenceInDays(start, today);
                       
+                      if (endDate) {
+                        const end = new Date(endDate);
+                        const daysPastEnd = differenceInDays(today, end);
+                        
+                        if (daysPastEnd > 0) {
+                          return 'Trip ended';
+                        }
+                      }
+                      
                       if (daysLeft > 0) {
                         return `${daysLeft} day${daysLeft === 1 ? '' : 's'} left to start`;
                       } else if (daysLeft === 0) {
