@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,24 +48,64 @@ export const ActivityForm = ({
   isEditing = false 
 }: ActivityFormProps) => {
   const [formData, setFormData] = useState<CreateActivityData>({
-    name: activity?.name || '',
-    description: activity?.description || '',
-    activity_type: activity?.activity_type || 'attraction',
-    start_time: activity?.start_time || '',
-    end_time: activity?.end_time || '',
-    date: activity?.date || '',
-    address: activity?.address || '',
-    website_url: activity?.website_url || '',
-    phone: activity?.phone || '',
-    price_range: activity?.price_range || '',
-    notes: activity?.notes || '',
-    image_url: activity?.image_url || '',
+    name: '',
+    description: '',
+    activity_type: 'attraction',
+    start_time: '',
+    end_time: '',
+    date: '',
+    address: '',
+    website_url: '',
+    phone: '',
+    price_range: '',
+    notes: '',
+    image_url: '',
   });
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(activity?.image_url || '');
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  // Update form data when activity prop changes (for editing)
+  useEffect(() => {
+    if (activity) {
+      setFormData({
+        name: activity.name || '',
+        description: activity.description || '',
+        activity_type: activity.activity_type || 'attraction',
+        start_time: activity.start_time || '',
+        end_time: activity.end_time || '',
+        date: activity.date || '',
+        address: activity.address || '',
+        website_url: activity.website_url || '',
+        phone: activity.phone || '',
+        price_range: activity.price_range || '',
+        notes: activity.notes || '',
+        image_url: activity.image_url || '',
+      });
+      setPreviewUrl(activity.image_url || '');
+      setImageFile(null); // Reset image file when editing existing activity
+    } else {
+      // Reset form for new activity
+      setFormData({
+        name: '',
+        description: '',
+        activity_type: 'attraction',
+        start_time: '',
+        end_time: '',
+        date: '',
+        address: '',
+        website_url: '',
+        phone: '',
+        price_range: '',
+        notes: '',
+        image_url: '',
+      });
+      setPreviewUrl('');
+      setImageFile(null);
+    }
+  }, [activity, isOpen]);
 
   const handleInputChange = (field: keyof CreateActivityData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
