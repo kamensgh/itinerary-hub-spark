@@ -58,6 +58,7 @@ import { DraggableLocationView } from '@/components/DraggableLocationView';
 import type { Itinerary } from '@/hooks/useItineraries';
 import type { Activity, CreateActivityData } from '@/hooks/useActivities';
 import { toSentenceCase } from '@/lib/sentenceCase';
+import { differenceInDays } from 'date-fns';
 
 interface LocationData {
   id: string;
@@ -552,11 +553,22 @@ const CreateItineraryView = () => {
                     : 'Plan your next adventure')}
               </p>
               <div className="flex flex-wrap gap-4 text-sm">
-                {startDate && endDate && (
+                {startDate && (
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(startDate).toLocaleDateString()} -{' '}
-                    {new Date(endDate).toLocaleDateString()}
+                    {(() => {
+                      const today = new Date();
+                      const start = new Date(startDate);
+                      const daysLeft = differenceInDays(start, today);
+                      
+                      if (daysLeft > 0) {
+                        return `${daysLeft} day${daysLeft === 1 ? '' : 's'} left to start`;
+                      } else if (daysLeft === 0) {
+                        return 'Starting today';
+                      } else {
+                        return 'Trip started';
+                      }
+                    })()}
                   </div>
                 )}
                 {/* <div className="flex items-center gap-1">

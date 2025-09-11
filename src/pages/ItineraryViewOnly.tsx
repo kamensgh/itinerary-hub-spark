@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { differenceInDays } from 'date-fns';
 
 interface ItineraryParticipant {
   id: string;
@@ -128,10 +129,22 @@ const ItineraryViewOnly = () => {
             {toSentenceCase(itinerary?.description) || "Plan your next adventure"}
           </p>
           <div className="flex flex-wrap gap-4 text-sm mb-2">
-            {itinerary?.start_date && itinerary?.end_date && (
+            {itinerary?.start_date && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {new Date(itinerary.start_date).toLocaleDateString()} - {new Date(itinerary.end_date).toLocaleDateString()}
+                {(() => {
+                  const today = new Date();
+                  const start = new Date(itinerary.start_date);
+                  const daysLeft = differenceInDays(start, today);
+                  
+                  if (daysLeft > 0) {
+                    return `${daysLeft} day${daysLeft === 1 ? '' : 's'} left to start`;
+                  } else if (daysLeft === 0) {
+                    return 'Starting today';
+                  } else {
+                    return 'Trip started';
+                  }
+                })()}
               </div>
             )}
             <div className="flex items-center gap-1">
