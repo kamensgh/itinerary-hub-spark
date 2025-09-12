@@ -1,10 +1,12 @@
 
 import { useParams } from "react-router-dom";
 import { useActivities } from "@/hooks/useActivities";
+import { useExpenses } from "@/hooks/useExpenses";
 import { useEffect, useState } from "react";
 import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar, Share2, CalendarPlus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapPin, Calendar, Share2, CalendarPlus, DollarSign } from "lucide-react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -36,6 +38,7 @@ interface Itinerary {
 const ItineraryViewOnly = () => {
   const { id } = useParams<{ id: string }>();
   const { activities } = useActivities(id || "");
+  const { expenses, getTotalCost } = useExpenses(id || "");
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -246,44 +249,95 @@ const ItineraryViewOnly = () => {
           return null;
         })()}
 
-        {itinerary && itinerary.locations && itinerary.locations.length > 0 ? (
-          itinerary.locations.map((location, idx) => {
-            const locationActivities = activities.filter(a => a.location_index === idx);
-            return (
-              <Card key={location} className="mb-6">
-                <CardHeader>
-                  <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {locationActivities.length} activities
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {locationActivities.length > 0 ? (
-                    <div className="space-y-4">
-                      {locationActivities.map(activity => (
-                        <ActivityCard key={activity.id} activity={activity} readOnly />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 bg-muted/30 rounded-lg text-center">
-                      <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
-                      <p className="text-muted-foreground mb-2">No activities for this location</p>
-                    </div>
-                  )}
+        {/* Tabs Section */}
+        <Tabs defaultValue="locations" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="locations">Locations</TabsTrigger>
+            <TabsTrigger value="budget">Budget</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="locations" className="mt-6">
+            {itinerary && itinerary.locations && itinerary.locations.length > 0 ? (
+              itinerary.locations.map((location, idx) => {
+                const locationActivities = activities.filter(a => a.location_index === idx);
+                return (
+                  <Card key={location} className="mb-6">
+                    <CardHeader>
+                      <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        {locationActivities.length} activities
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {locationActivities.length > 0 ? (
+                        <div className="space-y-4">
+                          {locationActivities.map(activity => (
+                            <ActivityCard key={activity.id} activity={activity} readOnly />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-6 bg-muted/30 rounded-lg text-center">
+                          <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
+                          <p className="text-muted-foreground mb-2">No activities for this location</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No locations found</h3>
+                  <p className="text-muted-foreground">No activities to display</p>
                 </CardContent>
               </Card>
-            );
-          })
-        ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No locations found</h3>
-              <p className="text-muted-foreground">No activities to display</p>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </TabsContent>
+          
+          <TabsContent value="budget" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Trip Budget
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+                  <div className="text-2xl font-bold text-center">
+                    ${getTotalCost().toFixed(2)}
+                  </div>
+                  <div className="text-sm text-muted-foreground text-center">
+                    Estimated Total Cost
+                  </div>
+                </div>
+                
+                {expenses.length > 0 ? (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                      Expenses ({expenses.length})
+                    </h4>
+                    {expenses.map((expense) => (
+                      <div key={expense.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
+                        <span className="font-medium">{expense.name}</span>
+                        <span className="text-muted-foreground">${expense.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">No expenses yet</h3>
+                    <p className="text-muted-foreground">Budget information will appear here when expenses are added</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
