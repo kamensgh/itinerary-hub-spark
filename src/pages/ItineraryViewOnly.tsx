@@ -2,6 +2,7 @@
 import { useParams } from "react-router-dom";
 import { useActivities } from "@/hooks/useActivities";
 import { useExpenses } from "@/hooks/useExpenses";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useEffect, useState } from "react";
 import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +40,7 @@ const ItineraryViewOnly = () => {
   const { id } = useParams<{ id: string }>();
   const { activities } = useActivities(id || "");
   const { expenses, getTotalCost } = useExpenses(id || "");
+  const { formatAmount } = useCurrency();
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -308,7 +310,7 @@ const ItineraryViewOnly = () => {
               <CardContent>
                 <div className="mb-6 p-4 bg-muted/30 rounded-lg">
                   <div className="text-2xl font-bold text-center">
-                    ${getTotalCost().toFixed(2)}
+                    {formatAmount(getTotalCost())}
                   </div>
                   <div className="text-sm text-muted-foreground text-center">
                     Estimated Total Cost
@@ -323,7 +325,7 @@ const ItineraryViewOnly = () => {
                     {expenses.map((expense) => (
                       <div key={expense.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
                         <span className="font-medium">{expense.name}</span>
-                        <span className="text-muted-foreground">${expense.amount.toFixed(2)}</span>
+                        <span className="text-muted-foreground">{formatAmount(expense.amount)}</span>
                       </div>
                     ))}
                   </div>

@@ -53,6 +53,7 @@ import { toast } from '@/hooks/use-toast';
 import { useActivities } from '@/hooks/useActivities';
 import { useItineraries, CreateItineraryData } from '@/hooks/useItineraries';
 import { useExpenses, CreateExpenseData } from '@/hooks/useExpenses';
+import { useCurrency } from '@/hooks/useCurrency';
 import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
@@ -116,6 +117,14 @@ const CreateItineraryView = () => {
     deleteExpense,
     getTotalCost,
   } = useExpenses(existingItinerary?.id || '');
+
+  const {
+    selectedCurrency,
+    updateCurrency,
+    formatAmount,
+    getAfricanCurrencies,
+    getNonAfricanCurrencies,
+  } = useCurrency();
 
   // Expense form state
   const [expenseName, setExpenseName] = useState('');
@@ -1003,13 +1012,43 @@ const CreateItineraryView = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-primary">
-                      ${getTotalCost().toFixed(2)}
+                      {formatAmount(getTotalCost())}
                     </p>
                     <p className="text-sm text-muted-foreground">Estimated Cost</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Currency Selection */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Currency
+                  </label>
+                  <Select value={selectedCurrency.code} onValueChange={updateCurrency}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="p-2">
+                        <div className="text-xs font-semibold text-muted-foreground mb-2">African Currencies</div>
+                        {getAfricanCurrencies().map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.symbol} {currency.name} ({currency.code})
+                          </SelectItem>
+                        ))}
+                      </div>
+                      <div className="p-2">
+                        <div className="text-xs font-semibold text-muted-foreground mb-2">Other Currencies</div>
+                        {getNonAfricanCurrencies().map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.symbol} {currency.name} ({currency.code})
+                          </SelectItem>
+                        ))}
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Add Expense Form */}
                 <div className="flex gap-2">
                   <Input
@@ -1055,7 +1094,7 @@ const CreateItineraryView = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="font-bold text-lg">
-                            ${expense.amount.toFixed(2)}
+                            {formatAmount(expense.amount)}
                           </span>
                           <Button
                             variant="ghost"
