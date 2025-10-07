@@ -260,7 +260,7 @@ export const useItineraries = () => {
     }
   };
 
-  const updateLocationOrder = async (itineraryId: string, newLocations: string[]) => {
+  const updateLocationOrder = async (itineraryId: string, oldLocations: string[], newLocations: string[]) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
@@ -277,9 +277,10 @@ export const useItineraries = () => {
 
       if (activities && activities.length > 0) {
         const updates = activities.map(activity => {
-          // Find the new index for this activity's location
-          const currentLocation = newLocations[activity.location_index];
-          const newLocationIndex = newLocations.indexOf(currentLocation);
+          // Get the location name from the old locations array
+          const oldLocationName = oldLocations[activity.location_index];
+          // Find where this location is in the new order
+          const newLocationIndex = newLocations.indexOf(oldLocationName);
           
           return supabase
             .from('activities')
@@ -292,7 +293,7 @@ export const useItineraries = () => {
 
       toast({
         title: "Success",
-        description: "Locations reordered successfully",
+        description: "Locations and activities reordered successfully",
       });
 
     } catch (error) {

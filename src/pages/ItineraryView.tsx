@@ -102,6 +102,7 @@ const CreateItineraryView = () => {
 
   const {
     activities,
+    fetchActivities,
     createActivity,
     updateActivity,
     deleteActivity,
@@ -248,15 +249,24 @@ const CreateItineraryView = () => {
   };
 
   const handleLocationsReorder = async (reorderedLocations: LocationData[]) => {
-    setLocations(reorderedLocations);
-    
     if (existingItinerary) {
       try {
-        const locationNames = reorderedLocations.map(loc => loc.name).filter(Boolean);
-        await updateLocationOrder(existingItinerary.id, locationNames);
+        const oldLocationNames = locations.map(loc => loc.name).filter(Boolean);
+        const newLocationNames = reorderedLocations.map(loc => loc.name).filter(Boolean);
+        
+        await updateLocationOrder(existingItinerary.id, oldLocationNames, newLocationNames);
+        
+        // Update local state after successful database update
+        setLocations(reorderedLocations);
+        
+        // Refresh activities to reflect the new location indices
+        await fetchActivities();
       } catch (error) {
         console.error('Error updating location order:', error);
       }
+    } else {
+      // If not saved yet, just update local state
+      setLocations(reorderedLocations);
     }
   };
 
