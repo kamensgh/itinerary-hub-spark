@@ -283,6 +283,12 @@ const CreateItineraryView = () => {
         // Update local state after successful database update
         setLocations(reorderedLocations);
         
+        // Update existingItinerary to reflect new location order
+        setExistingItinerary({
+          ...existingItinerary,
+          locations: newLocationNames
+        });
+        
         // Refresh activities to reflect the new location indices
         await fetchActivities();
       } catch (error) {
