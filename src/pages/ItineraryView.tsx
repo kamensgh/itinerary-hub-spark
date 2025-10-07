@@ -240,12 +240,36 @@ const CreateItineraryView = () => {
     setLocations([...locations, { id: newId, name: '', address: '' }]);
   };
 
-  const updateLocation = (id: string, field: 'name' | 'address', value: string) => {
-    setLocations(locations.map((loc) => (loc.id === id ? { ...loc, [field]: value } : loc)));
+  const updateLocation = async (id: string, field: 'name' | 'address', value: string) => {
+    const updatedLocations = locations.map((loc) => (loc.id === id ? { ...loc, [field]: value } : loc));
+    setLocations(updatedLocations);
+    
+    // If location name changed and itinerary exists, update in database and refresh activities
+    if (field === 'name' && existingItinerary) {
+      try {
+        const locationNames = updatedLocations.map(loc => loc.name).filter(Boolean);
+        await updateItinerary(existingItinerary.id, { locations: locationNames });
+        await fetchActivities();
+      } catch (error) {
+        console.error('Error updating location:', error);
+      }
+    }
   };
 
-  const removeLocation = (id: string) => {
-    setLocations(locations.filter((loc) => loc.id !== id));
+  const removeLocation = async (id: string) => {
+    const updatedLocations = locations.filter((loc) => loc.id !== id);
+    setLocations(updatedLocations);
+    
+    // If itinerary exists, update in database and refresh activities
+    if (existingItinerary) {
+      try {
+        const locationNames = updatedLocations.map(loc => loc.name).filter(Boolean);
+        await updateItinerary(existingItinerary.id, { locations: locationNames });
+        await fetchActivities();
+      } catch (error) {
+        console.error('Error removing location:', error);
+      }
+    }
   };
 
   const handleLocationsReorder = async (reorderedLocations: LocationData[]) => {
