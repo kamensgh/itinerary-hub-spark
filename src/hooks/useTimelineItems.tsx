@@ -8,6 +8,7 @@ export interface TimelineItem {
   itinerary_id: string;
   date: Date;
   description: string;
+  url?: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -16,6 +17,7 @@ export interface TimelineItem {
 export interface CreateTimelineItemData {
   date: Date;
   description: string;
+  url?: string;
 }
 
 export const useTimelineItems = (itineraryId: string | undefined) => {
@@ -66,6 +68,7 @@ export const useTimelineItems = (itineraryId: string | undefined) => {
           itinerary_id: itineraryId,
           date: data.date.toISOString().split('T')[0],
           description: data.description,
+          url: data.url,
           sort_order: timelineItems.length,
         })
         .select()
@@ -97,6 +100,9 @@ export const useTimelineItems = (itineraryId: string | undefined) => {
       }
       if (data.description !== undefined) {
         updateData.description = data.description;
+      }
+      if (data.url !== undefined) {
+        updateData.url = data.url;
       }
 
       const { error } = await supabase

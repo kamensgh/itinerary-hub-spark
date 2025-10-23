@@ -231,6 +231,7 @@ export type Database = {
           itinerary_id: string
           sort_order: number
           updated_at: string
+          url: string | null
         }
         Insert: {
           created_at?: string
@@ -240,6 +241,7 @@ export type Database = {
           itinerary_id: string
           sort_order?: number
           updated_at?: string
+          url?: string | null
         }
         Update: {
           created_at?: string
@@ -249,6 +251,7 @@ export type Database = {
           itinerary_id?: string
           sort_order?: number
           updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }
