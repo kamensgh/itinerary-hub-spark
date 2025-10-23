@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
-import { Calendar } from 'lucide-react';
+import { Calendar, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { TimelineItem } from '@/hooks/useTimelineItems';
 
 interface TimelineViewProps {
@@ -41,9 +42,22 @@ export const TimelineView = ({ items }: TimelineViewProps) => {
                   {format(item.date, 'EEEE, MMMM d, yyyy')}
                 </h3>
               </div>
-              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap mb-4">
                 {item.description}
               </p>
+              {item.url && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="gap-2"
+                >
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    Learn More
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
             </Card>
           </div>
         ))}

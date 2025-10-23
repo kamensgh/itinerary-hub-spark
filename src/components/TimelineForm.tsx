@@ -15,8 +15,8 @@ import { TimelineItem } from '@/hooks/useTimelineItems';
 
 interface TimelineFormProps {
   items: TimelineItem[];
-  onAdd: (data: { date: Date; description: string }) => void;
-  onEdit: (id: string, data: { date: Date; description: string }) => void;
+  onAdd: (data: { date: Date; description: string; url?: string }) => void;
+  onEdit: (id: string, data: { date: Date; description: string; url?: string }) => void;
   onDelete: (id: string) => void;
 }
 
@@ -25,6 +25,7 @@ export const TimelineForm = ({ items, onAdd, onEdit, onDelete }: TimelineFormPro
   const [isAdding, setIsAdding] = useState(false);
   const [date, setDate] = useState<Date>();
   const [description, setDescription] = useState('');
+  const [url, setUrl] = useState('');
 
   const handleSubmit = () => {
     if (!date || !description.trim()) {
@@ -32,14 +33,15 @@ export const TimelineForm = ({ items, onAdd, onEdit, onDelete }: TimelineFormPro
     }
 
     if (editingId) {
-      onEdit(editingId, { date, description });
+      onEdit(editingId, { date, description, url: url || undefined });
       setEditingId(null);
     } else {
-      onAdd({ date, description });
+      onAdd({ date, description, url: url || undefined });
     }
 
     setDate(undefined);
     setDescription('');
+    setUrl('');
     setIsAdding(false);
   };
 
@@ -47,6 +49,7 @@ export const TimelineForm = ({ items, onAdd, onEdit, onDelete }: TimelineFormPro
     setEditingId(item.id);
     setDate(item.date);
     setDescription(item.description);
+    setUrl(item.url || '');
     setIsAdding(true);
   };
 
@@ -55,6 +58,7 @@ export const TimelineForm = ({ items, onAdd, onEdit, onDelete }: TimelineFormPro
     setIsAdding(false);
     setDate(undefined);
     setDescription('');
+    setUrl('');
   };
 
   return (
@@ -108,6 +112,17 @@ export const TimelineForm = ({ items, onAdd, onEdit, onDelete }: TimelineFormPro
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the activity or event..."
               rows={4}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">URL (Optional)</label>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
             />
           </div>
 
