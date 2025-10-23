@@ -222,6 +222,36 @@ export type Database = {
         }
         Relationships: []
       }
+      timeline_items: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          id: string
+          itinerary_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          itinerary_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          itinerary_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

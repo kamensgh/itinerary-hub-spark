@@ -7,8 +7,10 @@ import { useEffect, useState } from "react";
 import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Share2, CalendarPlus, DollarSign } from "lucide-react";
+import { MapPin, Calendar, Share2, CalendarPlus, DollarSign, Clock } from "lucide-react";
 import { ActivityCard } from "@/components/ActivityCard";
+import { TimelineView } from "@/components/TimelineView";
+import { useTimelineItems } from "@/hooks/useTimelineItems";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -40,6 +42,7 @@ const ItineraryViewOnly = () => {
   const { id } = useParams<{ id: string }>();
   const { activities } = useActivities(id || "");
   const { expenses, getTotalCost } = useExpenses(id || "");
+  const { timelineItems } = useTimelineItems(id);
   const { formatAmount } = useCurrency();
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -253,8 +256,12 @@ const ItineraryViewOnly = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="locations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="locations">Locations</TabsTrigger>
+            <TabsTrigger value="timeline">
+              <Clock className="h-4 w-4 mr-2" />
+              Timeline
+            </TabsTrigger>
             <TabsTrigger value="budget">Budget</TabsTrigger>
           </TabsList>
           
@@ -297,6 +304,12 @@ const ItineraryViewOnly = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+          
+          <TabsContent value="timeline" className="mt-6">
+            <div className="max-w-4xl mx-auto">
+              <TimelineView items={timelineItems} />
+            </div>
           </TabsContent>
           
           <TabsContent value="budget" className="mt-6">

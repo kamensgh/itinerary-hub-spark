@@ -58,6 +58,8 @@ import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
 import { DraggableLocationView } from '@/components/DraggableLocationView';
+import { TimelineForm } from '@/components/TimelineForm';
+import { useTimelineItems } from '@/hooks/useTimelineItems';
 import type { Itinerary } from '@/hooks/useItineraries';
 import type { Activity, CreateActivityData } from '@/hooks/useActivities';
 import { toSentenceCase } from '@/lib/sentenceCase';
@@ -75,6 +77,12 @@ const CreateItineraryView = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { createItinerary, updateItinerary, updateLocationOrder } = useItineraries();
+  const { 
+    timelineItems, 
+    createTimelineItem, 
+    updateTimelineItem, 
+    deleteTimelineItem 
+  } = useTimelineItems(id);
 
   // Form states
   const [title, setTitle] = useState('');
@@ -699,7 +707,7 @@ const CreateItineraryView = () => {
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
             <TabsTrigger value="form" className="flex items-center gap-2">
               <Edit3 className="h-4 w-4" />
               Form
@@ -707,6 +715,14 @@ const CreateItineraryView = () => {
             <TabsTrigger value="preview" className="flex items-center gap-2 hidden">
               <Eye className="h-4 w-4" />
               Preview
+            </TabsTrigger>
+            <TabsTrigger
+              value="simple_timeline"
+              className="flex items-center gap-2"
+              disabled={!existingItinerary}
+            >
+              <Calendar className="h-4 w-4" />
+              Timeline
             </TabsTrigger>
             <TabsTrigger
               value="timeline"
@@ -980,6 +996,26 @@ const CreateItineraryView = () => {
                 {isEditing ? 'Update Itinerary' : 'Create Itinerary'}
               </Button>
             </div>
+          </TabsContent>
+
+          {/* Simple Timeline Tab */}
+          <TabsContent value="simple_timeline" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Timeline</CardTitle>
+                <CardDescription>
+                  Add important dates and milestones for your trip
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TimelineForm
+                  items={timelineItems}
+                  onAdd={(data) => createTimelineItem(data)}
+                  onEdit={(id, data) => updateTimelineItem(id, data)}
+                  onDelete={(id) => deleteTimelineItem(id)}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Activities Tab */}
