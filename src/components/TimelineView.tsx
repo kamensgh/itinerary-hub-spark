@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { TimelineItem } from '@/hooks/useTimelineItems';
+import { toSentenceCase } from '@/lib/sentenceCase';
 
 interface TimelineViewProps {
   items: TimelineItem[];
@@ -37,12 +38,10 @@ export const TimelineView = ({ items }: TimelineViewProps) => {
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="font-bold text-lg">
-                  {format(item.date, 'EEEE, MMMM d, yyyy')}
-                </h3>
+                <h3 className="font-bold text-lg">{format(item.date, 'EEEE, MMMM d, yyyy')}</h3>
               </div>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {item.description}
+                {toSentenceCase(item.description)}
               </p>
             </Card>
           </div>

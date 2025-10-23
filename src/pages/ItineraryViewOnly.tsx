@@ -125,34 +125,37 @@ const ItineraryViewOnly = () => {
       <div
         className="text-white py-8 relative overflow-hidden"
         style={{
-          background: itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-')
-            ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
-            : itinerary?.image?.startsWith('gradient-') 
-            ? "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)"
-            : "linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)",
+          background:
+            itinerary?.image &&
+            itinerary.image !== 'gradient-sky' &&
+            !itinerary.image.startsWith('gradient-')
+              ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
+              : itinerary?.image?.startsWith('gradient-')
+              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
+              : 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
         }}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <h1 className="text-3xl md:text-4xl font-bold">
-              {toSentenceCase(itinerary?.title) || "Itinerary"}
+              {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
             {itinerary && (
               <div className="flex gap-2">
-                 <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-white hover:bg-white/20"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
               </div>
             )}
           </div>
           <p className="text-lg opacity-90 mb-4">
-            {toSentenceCase(itinerary?.description) || "Plan your next adventure"}
+            {toSentenceCase(itinerary?.description) || 'Plan your next adventure'}
           </p>
           <div className="flex flex-wrap gap-4 text-sm mb-2">
             {itinerary?.start_date && (
@@ -162,16 +165,16 @@ const ItineraryViewOnly = () => {
                   const today = new Date();
                   const start = new Date(itinerary.start_date);
                   const daysLeft = differenceInDays(start, today);
-                  
+
                   if (itinerary.end_date) {
                     const end = new Date(itinerary.end_date);
                     const daysPastEnd = differenceInDays(today, end);
-                    
+
                     if (daysPastEnd > 0) {
                       return 'Trip ended';
                     }
                   }
-                  
+
                   if (daysLeft > 0) {
                     return `${daysLeft} day${daysLeft === 1 ? '' : 's'} left to start`;
                   } else if (daysLeft === 0) {
@@ -195,7 +198,10 @@ const ItineraryViewOnly = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold">Participants:</span>
                 {itinerary.participants.map((p) => (
-                  <span key={p.id} className="inline-block px-2 py-1 bg-white/10 rounded text-xs font-medium">
+                  <span
+                    key={p.id}
+                    className="inline-block px-2 py-1 bg-white/10 rounded text-xs font-medium"
+                  >
                     {p.name}
                   </span>
                 ))}
@@ -210,7 +216,7 @@ const ItineraryViewOnly = () => {
         {/* Meeting Point Card */}
         {(() => {
           let meetingPoint = itinerary?.meetingPoint;
-          
+
           if (typeof meetingPoint === 'string') {
             meetingPoint = { name: meetingPoint };
           }
@@ -264,11 +270,11 @@ const ItineraryViewOnly = () => {
             </TabsTrigger>
             <TabsTrigger value="budget">Budget</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="locations" className="mt-6">
             {itinerary && itinerary.locations && itinerary.locations.length > 0 ? (
               itinerary.locations.map((location, idx) => {
-                const locationActivities = activities.filter(a => a.location_index === idx);
+                const locationActivities = activities.filter((a) => a.location_index === idx);
                 return (
                   <Card key={location} className="mb-6">
                     <CardHeader>
@@ -281,14 +287,16 @@ const ItineraryViewOnly = () => {
                     <CardContent>
                       {locationActivities.length > 0 ? (
                         <div className="space-y-4">
-                          {locationActivities.map(activity => (
+                          {locationActivities.map((activity) => (
                             <ActivityCard key={activity.id} activity={activity} readOnly />
                           ))}
                         </div>
                       ) : (
                         <div className="p-6 bg-muted/30 rounded-lg text-center">
                           <Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
-                          <p className="text-muted-foreground mb-2">No activities for this location</p>
+                          <p className="text-muted-foreground mb-2">
+                            No activities for this location
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -305,13 +313,13 @@ const ItineraryViewOnly = () => {
               </Card>
             )}
           </TabsContent>
-          
+
           <TabsContent value="timeline" className="mt-6">
             <div className="max-w-4xl mx-auto">
               <TimelineView items={timelineItems} />
             </div>
           </TabsContent>
-          
+
           <TabsContent value="budget" className="mt-6">
             <Card>
               <CardHeader>
@@ -329,16 +337,21 @@ const ItineraryViewOnly = () => {
                     Estimated Total Cost
                   </div>
                 </div>
-                
+
                 {expenses.length > 0 ? (
                   <div className="space-y-3">
                     <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                       Expenses ({expenses.length})
                     </h4>
                     {expenses.map((expense) => (
-                      <div key={expense.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
-                        <span className="font-medium">{expense.name}</span>
-                        <span className="text-muted-foreground">{formatAmount(expense.amount)}</span>
+                      <div
+                        key={expense.id}
+                        className="flex justify-between items-center py-2 border-b border-border last:border-0"
+                      >
+                        <span className="font-medium">{toSentenceCase(expense.name)}</span>
+                        <span className="text-muted-foreground">
+                          {formatAmount(expense.amount)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -346,7 +359,9 @@ const ItineraryViewOnly = () => {
                   <div className="text-center py-8">
                     <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-semibold mb-2">No expenses yet</h3>
-                    <p className="text-muted-foreground">Budget information will appear here when expenses are added</p>
+                    <p className="text-muted-foreground">
+                      Budget information will appear here when expenses are added
+                    </p>
                   </div>
                 )}
               </CardContent>
