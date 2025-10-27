@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
@@ -21,8 +20,6 @@ import {
   Clock,
   Users,
   Share2,
-  MessageCircle,
-  Heart,
   Map,
   List,
   Settings,
@@ -33,7 +30,6 @@ import {
   Plus,
   Edit3,
   Save,
-  Eye,
   Trash2,
   Image,
   X,
@@ -59,6 +55,7 @@ import { ActivityCard } from '@/components/ActivityCard';
 import { DraggableActivityList } from '@/components/DraggableActivityList';
 import { DraggableLocationView } from '@/components/DraggableLocationView';
 import { TimelineForm } from '@/components/TimelineForm';
+import { TimelineView } from '@/components/TimelineView';
 import { useTimelineItems } from '@/hooks/useTimelineItems';
 import type { Itinerary } from '@/hooks/useItineraries';
 import type { Activity, CreateActivityData } from '@/hooks/useActivities';
@@ -225,7 +222,7 @@ const CreateItineraryView = () => {
         })) || [],
       );
       setIsEditing(true);
-      setActiveView('timeline');
+      setActiveView('locations');
       setMeetingPoint({
         name: itinerary.meetingPoint?.name || '',
         link: itinerary.meetingPoint?.link || '',
@@ -323,21 +320,9 @@ const CreateItineraryView = () => {
           </div>
         </div>
       </div>
-    );
+      );
   }
-  // Preview and save functions
-  const handlePreview = () => {
-    if (!title) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please add a title for your itinerary',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setActiveView('preview');
-  };
-
+  // Save functions
   const handleSaveDraft = async () => {
     if (!title) {
       toast({
@@ -712,25 +697,21 @@ const CreateItineraryView = () => {
               <Edit3 className="h-4 w-4" />
               Form
             </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2 hidden">
-              <Eye className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
             <TabsTrigger
-              value="simple_timeline"
+              value="locations"
               className="flex items-center gap-2"
               disabled={!existingItinerary}
             >
-              <Calendar className="h-4 w-4" />
-              Timeline
+              <MapPin className="h-4 w-4" />
+              Locations
             </TabsTrigger>
             <TabsTrigger
               value="timeline"
               className="flex items-center gap-2"
               disabled={!existingItinerary}
             >
-              <List className="h-4 w-4" />
-              Activities
+              <Clock className="h-4 w-4" />
+              Timeline
             </TabsTrigger>
             <TabsTrigger
               value="budget"
@@ -739,14 +720,6 @@ const CreateItineraryView = () => {
             >
               <DollarSign className="h-4 w-4" />
               Budget
-            </TabsTrigger>
-            <TabsTrigger
-              value="chat"
-              className="flex items-center gap-2  hidden"
-              disabled={!existingItinerary}
-            >
-              <MessageCircle className="h-4 w-4" />
-              Chat
             </TabsTrigger>
           </TabsList>
 
@@ -884,112 +857,14 @@ const CreateItineraryView = () => {
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-between">
-              <div className="flex gap-3">
-                <Button onClick={handleSaveDraft} variant="outline" disabled={isCreating}>
-                  {isCreating ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save Draft
-                </Button>
-                <Button onClick={handlePreview} variant="outline" disabled={!title}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
-                </Button>
-              </div>
-              <Button onClick={handleCreateItinerary} disabled={!title || isCreating}>
-                {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                {isEditing ? 'Update Itinerary' : 'Create Itinerary'}
-              </Button>
-            </div>
-          </TabsContent>
-
-          {/* Preview Tab */}
-          <TabsContent value="preview" className="space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Badge variant="secondary">Preview Mode</Badge>
-              <Button onClick={() => setActiveView('form')} variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Edit
-              </Button>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{toSentenceCase(title) || 'Untitled Trip'}</CardTitle>
-                {description && <CardDescription>{toSentenceCase(description)}</CardDescription>}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                  {startDate && endDate && (
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(startDate).toLocaleDateString()} -{' '}
-                      {new Date(endDate).toLocaleDateString()}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {locations.filter((l) => l.name).length} Destination(s)
-                  </div>
-                </div>
-
-                {(meetingPoint.name || meetingPoint.link) && (
-                  <div className="p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Users className="h-4 w-4" />
-                      <span className="font-medium text-sm">Meeting Point</span>
-                    </div>
-                    {meetingPoint.name && (
-                      <p className="text-sm font-medium">{meetingPoint.name}</p>
-                    )}
-                    {meetingPoint.link && (
-                      <a
-                        href={meetingPoint.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 underline break-all"
-                      >
-                        {meetingPoint.link}
-                      </a>
-                    )}
-                  </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button onClick={handleSaveDraft} variant="outline" disabled={isCreating}>
+                {isCreating ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
                 )}
-
-                {locations.filter((l) => l.name).length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-3">Destinations</h4>
-                    <div className="space-y-2">
-                      {locations
-                        .filter((l) => l.name)
-                        .map((location, index) => (
-                          <div
-                            key={location.id}
-                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                          >
-                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="font-medium">{toSentenceCase(location.name)}</p>
-                              {location.address && (
-                                <p className="text-sm text-muted-foreground">{location.address}</p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-3 justify-end">
-              <Button onClick={() => setActiveView('form')} variant="outline">
-                <Edit3 className="h-4 w-4 mr-2" />
-                Edit Itinerary
+                Save Draft
               </Button>
               <Button onClick={handleCreateItinerary} disabled={!title || isCreating}>
                 {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
@@ -998,28 +873,8 @@ const CreateItineraryView = () => {
             </div>
           </TabsContent>
 
-          {/* Simple Timeline Tab */}
-          <TabsContent value="simple_timeline" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Timeline</CardTitle>
-                <CardDescription>
-                  Add important dates and milestones for your trip
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TimelineForm
-                  items={timelineItems}
-                  onAdd={(data) => createTimelineItem(data)}
-                  onEdit={(id, data) => updateTimelineItem(id, data)}
-                  onDelete={(id) => deleteTimelineItem(id)}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Activities Tab */}
-          <TabsContent value="timeline" className="space-y-6">
+          {/* Locations Tab - Activities organized by location */}
+          <TabsContent value="locations" className="space-y-6">
             {existingItinerary?.locations && existingItinerary.locations.length > 0 ? (
               existingItinerary.locations.map((location, locationIndex) => {
                 const locationActivities = getActivitiesForLocation(locationIndex);
@@ -1036,7 +891,7 @@ const CreateItineraryView = () => {
                             <CardTitle className="text-xl">{toSentenceCase(location)}</CardTitle>
                             <CardDescription className="flex items-center gap-1">
                               <MapPin className="h-4 w-4" />
-                              Destination • {locationActivities.length} activities
+                              {locationActivities.length} activities
                             </CardDescription>
                           </div>
                         </div>
@@ -1075,6 +930,29 @@ const CreateItineraryView = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Timeline Tab */}
+          <TabsContent value="timeline" className="space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <TimelineView items={timelineItems} />
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Add Timeline Item</CardTitle>
+                  <CardDescription>
+                    Add important dates and milestones for your trip
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TimelineForm
+                    items={timelineItems}
+                    onAdd={(data) => createTimelineItem(data)}
+                    onEdit={(id, data) => updateTimelineItem(id, data)}
+                    onDelete={(id) => deleteTimelineItem(id)}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Budget Tab */}
@@ -1184,56 +1062,6 @@ const CreateItineraryView = () => {
                       </div>
                     ))
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Chat Tab */}
-          <TabsContent value="chat" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team discussion</CardTitle>
-                <CardDescription>Collaborate with your travel companions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 mb-4">
-                  {existingItinerary?.participants && existingItinerary.participants.length > 0 ? (
-                    <>
-                      <div className="flex gap-3">
-                        <Avatar>
-                          <AvatarFallback>
-                            {existingItinerary.participants[0].initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="bg-muted p-3 rounded-lg">
-                            <p className="text-sm">Looking forward to this trip! 🎉</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {existingItinerary.participants[0].name} • Just now
-                          </p>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No participants yet</p>
-                      <p className="text-sm mt-1">
-                        Invite travel companions to start collaborating
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Type your message..."
-                    className="flex-1 px-3 py-2 border rounded-md"
-                  />
-                  <Button>Send</Button>
                 </div>
               </CardContent>
             </Card>
