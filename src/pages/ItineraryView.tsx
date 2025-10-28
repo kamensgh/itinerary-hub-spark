@@ -327,15 +327,15 @@ const CreateItineraryView = () => {
   }
   // Preview and save functions
   const handlePreview = () => {
-    if (!title) {
+    if (!existingItinerary?.id) {
       toast({
-        title: 'Missing Information',
-        description: 'Please add a title for your itinerary',
+        title: 'Save First',
+        description: 'Please save your itinerary as a draft before previewing',
         variant: 'destructive',
       });
       return;
     }
-    setActiveView('preview');
+    navigate(`/itinerary/${existingItinerary.id}/view-only`);
   };
 
   const handleSaveDraft = async () => {
@@ -894,7 +894,7 @@ const CreateItineraryView = () => {
                   )}
                   Save Draft
                 </Button>
-                <Button onClick={handlePreview} variant="outline" disabled={!title}>
+                <Button onClick={handlePreview} variant="outline" disabled={!existingItinerary?.id}>
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
