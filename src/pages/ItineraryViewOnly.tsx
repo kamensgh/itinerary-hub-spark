@@ -150,9 +150,6 @@ const ItineraryViewOnly = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Edit
               </Button>
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
-                Preview Mode
-              </Badge>
             </div>
           )}
           <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -208,7 +205,11 @@ const ItineraryViewOnly = () => {
               <MapPin className="h-4 w-4" />
               {itinerary?.locations?.length || 0} destinations
             </div>
-            {itinerary?.status && (
+            {isPreview ? (
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs font-semibold uppercase tracking-wide">
+                Preview Mode
+              </Badge>
+            ) : itinerary?.status && (
               <span className="px-2 py-1 rounded bg-white/20 border border-white/30 text-xs font-semibold uppercase tracking-wide">
                 {itinerary.status}
               </span>
