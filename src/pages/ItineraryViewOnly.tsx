@@ -139,8 +139,8 @@ const ItineraryViewOnly = () => {
         }}
       >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-            {isPreview && (
+          {isPreview && (
+            <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <Button
                 variant="ghost"
                 size="sm"
@@ -150,17 +150,17 @@ const ItineraryViewOnly = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Edit
               </Button>
-            )}
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
+                Preview Mode
+              </Badge>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <h1 className="text-3xl md:text-4xl font-bold">
               {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
             {itinerary && (
               <div className="flex gap-2">
-                {isPreview && (
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    Preview Mode
-                  </Badge>
-                )}
                 <Button
                   variant="ghost"
                   size="sm"
