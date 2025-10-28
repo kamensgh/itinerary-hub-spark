@@ -150,13 +150,22 @@ const ItineraryViewOnly = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Edit
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
             </div>
           )}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <h1 className="text-3xl md:text-4xl font-bold">
               {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
-            {itinerary && (
+            {itinerary && !isPreview && (
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
