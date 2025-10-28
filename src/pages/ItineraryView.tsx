@@ -335,7 +335,7 @@ const CreateItineraryView = () => {
       });
       return;
     }
-    navigate(`/itinerary/${existingItinerary.id}/view-only`);
+    navigate(`/itinerary/${existingItinerary.id}/view-only?preview=true`);
   };
 
   const handleSaveDraft = async () => {

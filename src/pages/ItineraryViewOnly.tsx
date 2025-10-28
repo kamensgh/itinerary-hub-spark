@@ -1,5 +1,4 @@
-
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useActivities } from "@/hooks/useActivities";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -7,7 +6,7 @@ import { useEffect, useState } from "react";
 import { toSentenceCase } from "@/lib/sentenceCase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Share2, CalendarPlus, DollarSign, Clock } from "lucide-react";
+import { MapPin, Calendar, Share2, CalendarPlus, DollarSign, Clock, ArrowLeft } from "lucide-react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { TimelineView } from "@/components/TimelineView";
 import { useTimelineItems } from "@/hooks/useTimelineItems";
@@ -15,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { differenceInDays } from 'date-fns';
 
 interface ItineraryParticipant {
@@ -40,6 +40,9 @@ interface Itinerary {
 
 const ItineraryViewOnly = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isPreview = searchParams.get('preview') === 'true';
   const { activities } = useActivities(id || "");
   const { expenses, getTotalCost } = useExpenses(id || "");
   const { timelineItems } = useTimelineItems(id);
@@ -137,11 +140,27 @@ const ItineraryViewOnly = () => {
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+            {isPreview && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20"
+                onClick={() => navigate(`/itinerary/${id}`)}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Edit
+              </Button>
+            )}
             <h1 className="text-3xl md:text-4xl font-bold">
               {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
             {itinerary && (
               <div className="flex gap-2">
+                {isPreview && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    Preview Mode
+                  </Badge>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
