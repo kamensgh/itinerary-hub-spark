@@ -29,7 +29,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/itinerary/new" element={<CreateItineraryView />} />
       <Route path="/itinerary/:id" element={<CreateItineraryView />} />
-      <Route path="/itinerary/:id/view" element={<ItineraryViewOnly />} />
+      <Route path="/itinerary/:id/view-only" element={<ItineraryViewOnly />} />
       <Route path="/itinerary/preview" element={<ItineraryPreview />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
