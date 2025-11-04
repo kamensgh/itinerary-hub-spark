@@ -126,7 +126,13 @@ const ItineraryViewOnly = () => {
   return (
     <div className="min-h-screen bg-background">
       <div
-        className="border-b bg-card py-8 relative overflow-hidden"
+        className={`border-b py-8 relative overflow-hidden ${
+          itinerary?.image &&
+          itinerary.image !== 'gradient-sky' &&
+          !itinerary.image.startsWith('gradient-')
+            ? 'text-white'
+            : 'bg-card text-foreground'
+        }`}
         style={
           itinerary?.image &&
           itinerary.image !== 'gradient-sky' &&
@@ -161,7 +167,7 @@ const ItineraryViewOnly = () => {
             </div>
           )}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold">
               {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
             {itinerary && !isPreview && (
@@ -177,7 +183,13 @@ const ItineraryViewOnly = () => {
               </div>
             )}
           </div>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className={`text-lg mb-4 ${
+            itinerary?.image &&
+            itinerary.image !== 'gradient-sky' &&
+            !itinerary.image.startsWith('gradient-')
+              ? 'text-white/90'
+              : 'text-muted-foreground'
+          }`}>
             {toSentenceCase(itinerary?.description) || 'Plan your next adventure'}
           </p>
           <div className="flex flex-wrap gap-4 text-sm mb-2">

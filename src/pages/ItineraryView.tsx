@@ -514,7 +514,11 @@ const CreateItineraryView = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div
-        className="border-b bg-card relative overflow-hidden"
+        className={`border-b relative overflow-hidden ${
+          image && image !== 'gradient-sky' && !image.startsWith('gradient-')
+            ? 'text-white'
+            : 'bg-card text-foreground'
+        }`}
         style={
           image && image !== 'gradient-sky' && !image.startsWith('gradient-')
             ? {
@@ -649,11 +653,15 @@ const CreateItineraryView = () => {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 normal-case text-foreground">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 normal-case">
                 {toSentenceCase(title) ||
                   (isEditing ? toSentenceCase(existingItinerary?.title) : 'Create New Trip')}
               </h1>
-              <p className="text-lg text-muted-foreground mb-4">
+              <p className={`text-lg mb-4 ${
+                image && image !== 'gradient-sky' && !image.startsWith('gradient-')
+                  ? 'text-white/90'
+                  : 'text-muted-foreground'
+              }`}>
                 {toSentenceCase(description) ||
                   (isEditing
                     ? toSentenceCase(existingItinerary?.description)
