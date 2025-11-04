@@ -539,8 +539,9 @@ const CreateItineraryView = () => {
             </Link>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant={image && image !== 'gradient-sky' && !image.startsWith('gradient-') ? "ghost" : "outline"}
                 size="sm"
+                className={image && image !== 'gradient-sky' && !image.startsWith('gradient-') ? "text-white hover:bg-white/20 border-white/50" : ""}
                 onClick={() => {
                   if (existingItinerary?.id) {
                     const shareUrl = `${window.location.origin}/itinerary/${existingItinerary.id}/view`;
@@ -616,7 +617,11 @@ const CreateItineraryView = () => {
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant={image && image !== 'gradient-sky' && !image.startsWith('gradient-') ? "ghost" : "outline"}
+                    size="sm"
+                    className={image && image !== 'gradient-sky' && !image.startsWith('gradient-') ? "text-white hover:bg-white/20 border-white/50" : ""}
+                  >
                     <Image className="h-4 w-4 mr-2" />
                     Cover
                     <ChevronDown className="h-4 w-4 ml-2" />

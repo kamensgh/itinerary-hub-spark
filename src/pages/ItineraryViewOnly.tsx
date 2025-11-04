@@ -149,16 +149,18 @@ const ItineraryViewOnly = () => {
           {isPreview && (
             <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <Button
-                variant="outline"
+                variant={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "ghost" : "outline"}
                 size="sm"
+                className={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "text-white hover:bg-white/20 border-white/50" : ""}
                 onClick={() => navigate(`/itinerary/${id}`)}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Edit
               </Button>
               <Button
-                variant="outline"
+                variant={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "ghost" : "outline"}
                 size="sm"
+                className={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "text-white hover:bg-white/20 border-white/50" : ""}
                 onClick={handleShare}
               >
                 <Share2 className="h-4 w-4 mr-2" />
@@ -173,8 +175,9 @@ const ItineraryViewOnly = () => {
             {itinerary && !isPreview && (
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "ghost" : "outline"}
                   size="sm"
+                  className={itinerary?.image && itinerary.image !== 'gradient-sky' && !itinerary.image.startsWith('gradient-') ? "text-white hover:bg-white/20 border-white/50" : ""}
                   onClick={handleShare}
                 >
                   <Share2 className="h-4 w-4 mr-2" />
