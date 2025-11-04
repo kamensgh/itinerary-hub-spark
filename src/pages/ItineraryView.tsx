@@ -310,7 +310,7 @@ const CreateItineraryView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-sky">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6">
           <div className="space-y-4">
             <Skeleton className="h-8 w-32" />
@@ -511,32 +511,32 @@ const CreateItineraryView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-sky">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div
-        className="text-white relative overflow-hidden"
-        style={{
-          background:
-            image && image !== 'gradient-sky' && !image.startsWith('gradient-')
-              ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${image}') center/cover no-repeat`
-              : image?.startsWith('gradient-')
-              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
-              : 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
-        }}
+        className="border-b bg-card relative overflow-hidden"
+        style={
+          image && image !== 'gradient-sky' && !image.startsWith('gradient-')
+            ? {
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
       >
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4 flex-wrap">
             <Link to="/dashboard">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+              <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
             </Link>
             <div className="flex gap-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="text-white hover:bg-white/20"
                 onClick={() => {
                   if (existingItinerary?.id) {
                     const shareUrl = `${window.location.origin}/itinerary/${existingItinerary.id}/view`;
@@ -612,7 +612,7 @@ const CreateItineraryView = () => {
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                  <Button variant="outline" size="sm">
                     <Image className="h-4 w-4 mr-2" />
                     Cover
                     <ChevronDown className="h-4 w-4 ml-2" />
@@ -649,11 +649,11 @@ const CreateItineraryView = () => {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 normal-case">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 normal-case text-foreground">
                 {toSentenceCase(title) ||
                   (isEditing ? toSentenceCase(existingItinerary?.title) : 'Create New Trip')}
               </h1>
-              <p className="text-lg opacity-90 mb-4">
+              <p className="text-lg text-muted-foreground mb-4">
                 {toSentenceCase(description) ||
                   (isEditing
                     ? toSentenceCase(existingItinerary?.description)
@@ -691,7 +691,7 @@ const CreateItineraryView = () => {
                   <Users className="h-4 w-4" />
                   {existingItinerary?.participants?.length || 0} participants
                 </div> */}
-                <Badge variant="outline" className="text-white border-white/50">
+                <Badge variant="secondary">
                   {activeView === 'form'
                     ? 'Editing'
                     : activeView === 'preview'
@@ -950,7 +950,7 @@ const CreateItineraryView = () => {
                         href={meetingPoint.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 underline break-all"
+                        className="text-sm text-primary underline break-all"
                       >
                         {meetingPoint.link}
                       </a>

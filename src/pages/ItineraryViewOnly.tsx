@@ -78,7 +78,7 @@ const ItineraryViewOnly = () => {
 
    if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-sky">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6">
           <div className="space-y-4">
             <Skeleton className="h-8 w-32" />
@@ -124,36 +124,35 @@ const ItineraryViewOnly = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-sky">
+    <div className="min-h-screen bg-background">
       <div
-        className="text-white py-8 relative overflow-hidden"
-        style={{
-          background:
-            itinerary?.image &&
-            itinerary.image !== 'gradient-sky' &&
-            !itinerary.image.startsWith('gradient-')
-              ? `linear-gradient(rgba(56, 189, 248, 0.7), rgba(99, 102, 241, 0.7)), url('${itinerary.image}') center/cover no-repeat`
-              : itinerary?.image?.startsWith('gradient-')
-              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
-              : 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
-        }}
+        className="border-b bg-card py-8 relative overflow-hidden"
+        style={
+          itinerary?.image &&
+          itinerary.image !== 'gradient-sky' &&
+          !itinerary.image.startsWith('gradient-')
+            ? {
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${itinerary.image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
       >
         <div className="container mx-auto px-4">
           {isPreview && (
             <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="text-white hover:bg-white/20"
                 onClick={() => navigate(`/itinerary/${id}`)}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Edit
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="text-white hover:bg-white/20"
                 onClick={handleShare}
               >
                 <Share2 className="h-4 w-4 mr-2" />
@@ -162,15 +161,14 @@ const ItineraryViewOnly = () => {
             </div>
           )}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h1 className="text-3xl md:text-4xl font-bold">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
               {toSentenceCase(itinerary?.title) || 'Itinerary'}
             </h1>
             {itinerary && !isPreview && (
               <div className="flex gap-2">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="text-white hover:bg-white/20"
                   onClick={handleShare}
                 >
                   <Share2 className="h-4 w-4 mr-2" />
@@ -179,7 +177,7 @@ const ItineraryViewOnly = () => {
               </div>
             )}
           </div>
-          <p className="text-lg opacity-90 mb-4">
+          <p className="text-lg text-muted-foreground mb-4">
             {toSentenceCase(itinerary?.description) || 'Plan your next adventure'}
           </p>
           <div className="flex flex-wrap gap-4 text-sm mb-2">
@@ -215,24 +213,24 @@ const ItineraryViewOnly = () => {
               {itinerary?.locations?.length || 0} destinations
             </div>
             {isPreview ? (
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs font-semibold uppercase tracking-wide">
+              <Badge variant="secondary">
                 Preview Mode
               </Badge>
             ) : itinerary?.status && (
-              <span className="px-2 py-1 rounded bg-white/20 border border-white/30 text-xs font-semibold uppercase tracking-wide">
+              <Badge variant="secondary">
                 {itinerary.status}
-              </span>
+              </Badge>
             )}
             {itinerary?.participants && itinerary.participants.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="font-semibold">Participants:</span>
                 {itinerary.participants.map((p) => (
-                  <span
+                  <Badge
                     key={p.id}
-                    className="inline-block px-2 py-1 bg-white/10 rounded text-xs font-medium"
+                    variant="outline"
                   >
                     {p.name}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
@@ -277,7 +275,7 @@ const ItineraryViewOnly = () => {
                       href={meetingPoint.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 underline break-all"
+                      className="text-sm text-primary underline break-all"
                     >
                       {meetingPoint.link}
                     </a>
