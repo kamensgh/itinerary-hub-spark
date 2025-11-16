@@ -11,6 +11,7 @@ import { Mail, Loader2, AlertCircle, Plane } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -130,18 +131,24 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-      <Card className="w-full max-w-md border-2">
-        <CardHeader className="space-y-1 text-center pb-4">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Plane className="h-6 w-6 text-primary" />
-            <span className="text-2xl font-bold">TripShare</span>
-          </div>
-          <CardTitle className="text-2xl">Welcome</CardTitle>
-          <CardDescription>
-            Sign in to your account or create a new one
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen flex flex-col bg-gradient-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-2 shadow-primary">
+          <CardHeader className="space-y-1 text-center pb-4">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Plane className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">TripShare</span>
+            </div>
+            <CardTitle className="text-2xl">Welcome</CardTitle>
+            <CardDescription>
+              Sign in to your account or create a new one
+            </CardDescription>
+          </CardHeader>
         
         <CardContent className="space-y-4">
           {error && (
@@ -259,6 +266,7 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
