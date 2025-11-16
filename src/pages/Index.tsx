@@ -16,6 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -44,31 +45,33 @@ const Index = () => {
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            <span className="text-xl font-bold">TripShare</span>
+            <Plane className="h-5 w-5 text-primary" />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">TripShare</span>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link to="/auth">
               <Button variant="ghost">Sign In</Button>
             </Link>
             <Link to="/auth">
-              <Button>Get Started</Button>
+              <Button className="bg-gradient-primary hover:opacity-90">Get Started</Button>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container py-24 md:py-32">
+      <section className="container py-24 md:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-background opacity-50 -z-10" />
         <div className="mx-auto max-w-4xl text-center space-y-6">
-          <Badge variant="outline" className="mb-4">
-            <Sparkles className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="mb-4 border-primary/50">
+            <Sparkles className="h-3 w-3 mr-1 text-primary" />
             Collaborative Travel Planning
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
             Plan Your Perfect Trip
             <br />
-            <span className="text-muted-foreground">Together</span>
+            <span className="bg-gradient-primary bg-clip-text text-transparent">Together</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Create, share, and collaborate on travel itineraries with your friends and family. 
@@ -76,13 +79,13 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link to="/auth">
-              <Button size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-gradient-primary hover:opacity-90 shadow-primary">
                 Start Planning
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link to="/auth">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary/50 hover:bg-primary/10">
                 View Demo
               </Button>
             </Link>
@@ -103,10 +106,10 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-primary transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <MapPin className="h-6 w-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center mb-4 shadow-glow">
+                  <MapPin className="h-6 w-6 text-white" />
                 </div>
                 <CardTitle>Smart Locations</CardTitle>
                 <CardDescription>
@@ -115,10 +118,10 @@ const Index = () => {
               </CardHeader>
             </Card>
 
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-primary transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-gradient-secondary flex items-center justify-center mb-4 shadow-glow">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
                 <CardTitle>Real-time Collaboration</CardTitle>
                 <CardDescription>
@@ -127,10 +130,10 @@ const Index = () => {
               </CardHeader>
             </Card>
 
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-primary transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Share2 className="h-6 w-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-gradient-accent flex items-center justify-center mb-4 shadow-glow">
+                  <Share2 className="h-6 w-6 text-white" />
                 </div>
                 <CardTitle>Easy Sharing</CardTitle>
                 <CardDescription>

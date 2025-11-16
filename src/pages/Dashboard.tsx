@@ -30,6 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
@@ -145,11 +146,13 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-card shadow-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Plane className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Plane className="h-5 w-5 text-white" />
+              </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">My Itineraries</h1>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -158,9 +161,11 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button
                 onClick={() => navigate('/itinerary/new')}
                 size="default"
+                className="bg-gradient-primary hover:opacity-90"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">New Trip</span>
@@ -181,40 +186,40 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="hover:shadow-primary transition-all duration-300 border-l-4 border-l-primary">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-4 w-4 text-primary" />
                 Active
               </CardDescription>
-              <CardTitle className="text-3xl font-bold">{stats.active}</CardTitle>
+              <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">{stats.active}</CardTitle>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-primary transition-all duration-300 border-l-4 border-l-secondary">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 text-secondary" />
                 Planning
               </CardDescription>
-              <CardTitle className="text-3xl font-bold">{stats.planning}</CardTitle>
+              <CardTitle className="text-3xl font-bold bg-gradient-secondary bg-clip-text text-transparent">{stats.planning}</CardTitle>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-primary transition-all duration-300 border-l-4 border-l-accent">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 text-accent" />
                 Collaborators
               </CardDescription>
-              <CardTitle className="text-3xl font-bold">{stats.totalParticipants}</CardTitle>
+              <CardTitle className="text-3xl font-bold bg-gradient-accent bg-clip-text text-transparent">{stats.totalParticipants}</CardTitle>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-primary transition-all duration-300 border-l-4 border-l-primary">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
-                <Plane className="h-4 w-4" />
+                <Plane className="h-4 w-4 text-primary" />
                 Total Trips
               </CardDescription>
               <CardTitle className="text-3xl font-bold">{stats.totalTrips}</CardTitle>
